@@ -1,0 +1,12 @@
+main: net.dashmc.DashMC
+name: DashMC
+author: Tandhjulet
+version: ${project.version}
+description: Core plugin for DashMC
+
+depend: [WorldEdit]
+
+commands:
+  dash:
+    description: Administration command for dash plugin
+    usage: /<command>
