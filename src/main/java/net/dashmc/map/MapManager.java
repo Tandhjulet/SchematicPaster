@@ -10,7 +10,7 @@ import net.dashmc.DashMC;
 import net.dashmc.config.Config.MapConfig;
 
 public class MapManager {
-	private ArrayList<Map> maps = new ArrayList<>();
+	private ArrayList<Schematic> maps = new ArrayList<>();
 
 	private static MapManager instance;
 	private static File schematicDirectory = new File(DashMC.getPlugin().getDataFolder(), "schematics");
@@ -33,7 +33,7 @@ public class MapManager {
 					return;
 				}
 
-				Map registered = new Map(schemFile);
+				Schematic registered = new Schematic(schemFile);
 				maps.add(registered);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -43,8 +43,8 @@ public class MapManager {
 	}
 
 	public void pasteMap(int index) {
-		Map map = maps.get(index);
-		map.run();
+		Schematic map = maps.get(index);
+		map.paste();
 	}
 
 	public static MapManager get() {

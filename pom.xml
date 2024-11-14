@@ -26,12 +26,12 @@
 			<groupId>eu.okaeri</groupId>
 			<artifactId>okaeri-configs-serdes-bukkit</artifactId>
 			<version>5.0.5</version>
-		  </dependency>
-		  <dependency>
+		</dependency>
+		<dependency>
 			<groupId>eu.okaeri</groupId>
 			<artifactId>okaeri-configs-yaml-bukkit</artifactId>
 			<version>5.0.5</version>
-		  </dependency>
+		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -47,6 +47,11 @@
             <scope>provided</scope>
         </dependency>
 
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>8.5.15</version>
+		</dependency>		
 	</dependencies>
 
 	<build>
@@ -92,6 +97,11 @@
                     <relocations>
                         <relocation>
                             <pattern>eu.okaeri</pattern>
+                            <shadedPattern>net.dashmc.libs</shadedPattern>
+                        </relocation>
+
+						<relocation>
+                            <pattern>it.unimi.dsi</pattern>
                             <shadedPattern>net.dashmc.libs</shadedPattern>
                         </relocation>
                     </relocations>

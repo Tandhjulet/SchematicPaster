@@ -1,0 +1,1 @@
+Heavily inspired by FastAsyncWorldEdit (legacy)
