@@ -11,6 +11,7 @@ import eu.okaeri.configs.yaml.bukkit.serdes.SerdesBukkit;
 import lombok.Getter;
 import net.dashmc.commands.CommandDash;
 import net.dashmc.config.Config;
+import net.dashmc.map.MapManager;
 
 public class DashMC extends JavaPlugin {
 	// Precalculates and stores indexes to id array
@@ -35,6 +36,7 @@ public class DashMC extends JavaPlugin {
 		});
 
 		CommandDash.register();
+		MapManager.get();
 	}
 
 	public FileConfiguration getConfig() {

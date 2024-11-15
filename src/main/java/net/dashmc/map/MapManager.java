@@ -33,7 +33,7 @@ public class MapManager {
 					return;
 				}
 
-				Schematic registered = new Schematic(schemFile);
+				Schematic registered = new SchematicReader(schemFile).getSchematic();
 				maps.add(registered);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -44,7 +44,11 @@ public class MapManager {
 
 	public void pasteMap(int index) {
 		Schematic map = maps.get(index);
+		Bukkit.getLogger().info("Loading...");
+		map.load();
+		Bukkit.getLogger().info("Pasting...");
 		map.paste();
+		Bukkit.getLogger().info("Done...");
 	}
 
 	public static MapManager get() {

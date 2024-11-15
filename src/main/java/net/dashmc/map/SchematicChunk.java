@@ -3,13 +3,16 @@ package net.dashmc.map;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
 
 import net.dashmc.DashMC;
+import net.dashmc.util.MathUtils;
 import net.minecraft.server.v1_8_R3.ChunkSection;
+import net.minecraft.server.v1_8_R3.Entity;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 import net.minecraft.server.v1_8_R3.LongHashMap;
 import net.minecraft.server.v1_8_R3.NibbleArray;
@@ -174,8 +177,9 @@ public class SchematicChunk {
 		nmsChunk.f(true);
 		nmsChunk.mustSave = true;
 
-		// net.minecraft.server.v1_8_R3.World nmsWorld = nmsChunk.getWorld();
+		net.minecraft.server.v1_8_R3.World nmsWorld = nmsChunk.getWorld();
 		try {
+			Collection<Entity>[] entities = nmsChunk.getEntitySlices();
 			ChunkSection[] sections = nmsChunk.getSections();
 			// java.util.Map<BlockPosition, TileEntity> tileEntities =
 			// nmsChunk.getTileEntities();
@@ -184,6 +188,47 @@ public class SchematicChunk {
 			updateHeightMap();
 
 			// Removes entities
+			for (int i = 0; i < 16; i++) {
+				int count = this.count[i];
+				if (count == 0)
+					continue;
+
+				Collection<Entity> ents = entities[i];
+				if (ents.isEmpty())
+					continue;
+
+				if (count >= 4096) {
+					Iterator<Entity> entIter = ents.iterator();
+					while (entIter.hasNext()) {
+						Entity entity = entIter.next();
+						if (entity instanceof EntityPlayer)
+							continue;
+						entIter.remove();
+						nmsWorld.removeEntity(entity);
+					}
+					continue;
+				}
+
+				char[] array = getIdArray(i);
+				if (array == null)
+					continue;
+
+				Iterator<Entity> entIter = ents.iterator();
+				while (entIter.hasNext()) {
+					Entity entity = entIter.next();
+					if (entity instanceof EntityPlayer)
+						continue;
+
+					int x = (MathUtils.roundInt(entity.locX) & 15);
+					int z = (MathUtils.roundInt(entity.locZ) & 15);
+					int y = MathUtils.roundInt(entity.locY);
+					if (y < 0 || y > 255)
+						continue;
+					if (array[DashMC.CACHE_J[y][z][x]] != 0) {
+						nmsWorld.removeEntity(entity);
+					}
+				}
+			}
 			// Set entities
 
 			// Set blocks
@@ -217,12 +262,11 @@ public class SchematicChunk {
 			}
 
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
-
 	}
 
-	public void sendChunk(int bitMask) {
+	public void sendChunk() {
 		CraftChunk craftChunk = (CraftChunk) getChunk();
 		net.minecraft.server.v1_8_R3.Chunk nmsChunk = craftChunk.getHandle();
 
@@ -255,10 +299,12 @@ public class SchematicChunk {
 			ChunkSection[] sections = nmsChunk.getSections();
 
 			// Make sure there are no empty sections, and make every section
-			// fully lit.
+			// fully lit. Every empty section should be reflected in the bit mask.
+			char bitMask = 0xffff;
 			for (int i = 0; i < sections.length; ++i) {
 				if (sections[i] == null) {
 					sections[i] = emptySection;
+					bitMask ^= (1 << i);
 					empty = true;
 				}
 				sections[i].b(fullSkyLight);
@@ -266,8 +312,7 @@ public class SchematicChunk {
 
 			// 0xffff = 65535 = all 16 bits are set
 			if (bitMask == 0 || bitMask == 0xffff) {
-				// skip loading entities
-				bitMask = 255;
+
 			}
 
 			// Send packet with "normal" blocks

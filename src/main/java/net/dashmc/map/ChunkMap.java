@@ -1,5 +1,6 @@
 package net.dashmc.map;
 
+import java.util.Collection;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -22,11 +23,17 @@ public class ChunkMap {
 		}
 	};
 
-	public void forEach(RunnableWithVal<SchematicChunk> chunk) {
+	public void forEachAsync(RunnableWithVal<SchematicChunk> chunk) {
 		synchronized (chunks) {
 			for (Map.Entry<Long, SchematicChunk> entry : chunks.long2ObjectEntrySet()) {
 				chunk.run(entry.getValue());
 			}
+		}
+	}
+
+	public Collection<SchematicChunk> getSchematicChunks() {
+		synchronized (chunks) {
+			return chunks.values();
 		}
 	}
 
