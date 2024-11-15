@@ -63,6 +63,7 @@ public class Schematic {
 		Collection<SchematicChunk> chunks = map.getSchematicChunks();
 		for (SchematicChunk chunk : chunks) {
 			chunk.update();
+			chunk.sendChunk();
 		}
 	}
 

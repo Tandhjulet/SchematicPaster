@@ -8,6 +8,7 @@ import java.util.Iterator;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 
 import net.dashmc.DashMC;
 import net.dashmc.util.MathUtils;
@@ -71,7 +72,6 @@ public class SchematicChunk {
 		}
 	}
 
-	// Directly copied from
 	// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/e3a89ad9d4a0437af48be84af0088901a3d6c822/core/src/main/java/com/boydti/fawe/example/CharFaweChunk.java#L136
 	public void setBlock(int x, int y, int z, int id, int data) {
 		final int i = DashMC.CACHE_I[y][z][x];
@@ -246,6 +246,8 @@ public class SchematicChunk {
 						continue;
 
 					sections[j] = section = new ChunkSection(j << 4, true, newArray);
+					section.b(fullSkyLight);
+					section.a(fullSkyLight);
 					continue;
 				}
 
@@ -255,8 +257,13 @@ public class SchematicChunk {
 						continue;
 					}
 					sections[j] = section = new ChunkSection(j << 4, true, newArray);
+					section.b(fullSkyLight);
+					section.a(fullSkyLight);
 					continue;
 				}
+				section.b(fullSkyLight);
+				section.a(fullSkyLight);
+
 				// LIGHT UPDATE, SOLID BLOCKS, TICKING BLOCKS, NONEMPTY BLOCKS
 				// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/master/bukkit/src/main/java/com/boydti/fawe/bukkit/v1_8/BukkitChunk_1_8.java#L212
 
@@ -294,9 +301,15 @@ public class SchematicChunk {
 		}
 	}
 
+	public net.minecraft.server.v1_8_R3.Chunk getCachedChunk(World world) {
+		return ((CraftWorld) world).getHandle().chunkProviderServer.getChunkIfLoaded(x, z);
+	}
+
 	public void sendChunk() {
-		CraftChunk craftChunk = (CraftChunk) getChunk();
-		net.minecraft.server.v1_8_R3.Chunk nmsChunk = craftChunk.getHandle();
+		World bukkitWorld = DashMC.getConf().getMapOrigin().getWorld();
+		net.minecraft.server.v1_8_R3.Chunk nmsChunk = getCachedChunk(bukkitWorld);
+		if (nmsChunk == null)
+			return;
 
 		try {
 			WorldServer worldServer = (WorldServer) nmsChunk.getWorld();
@@ -310,7 +323,8 @@ public class SchematicChunk {
 			@SuppressWarnings("unchecked")
 			LongHashMap<Object> map = (LongHashMap<Object>) chunkMapField.get(chunkMap);
 
-			// https://hub.spigotmc.org/stash/projects/CHEETAH/repos/craftbukkit/browse/src/main/java/net/minecraft/server/PlayerChunkMap.java?at=38fbe60d4689ff026f09767ac9a5656da0549c2d
+			// builds a unique key, with x coordinate filling the last 4 bytes, and z the
+			// first 4
 			long pair = (long) x + 2147483647L | (long) z + 2147483647L << 32;
 
 			// The class PlayerChunk and it's associated fields are private
@@ -328,10 +342,12 @@ public class SchematicChunk {
 
 			// Make sure there are no empty sections, and make every section
 			// fully lit. Every empty section should be reflected in the bit mask.
+
 			char bitMask = 0xffff;
 			for (int i = 0; i < sections.length; ++i) {
 				if (sections[i] == null) {
 					sections[i] = emptySection;
+					// Make bit mask reflect that this section is empty
 					bitMask ^= (1 << i);
 					empty = true;
 				}
@@ -340,7 +356,14 @@ public class SchematicChunk {
 
 			// 0xffff = 65535 = all 16 bits are set
 			if (bitMask == 0 || bitMask == 0xffff) {
+				// First 8 bits
+				PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(nmsChunk, false, 65280);
+				for (EntityPlayer player : players) {
+					player.playerConnection.sendPacket(packet);
+				}
 
+				// Last 8 bits
+				bitMask = 255;
 			}
 
 			// Send packet with "normal" blocks
@@ -374,7 +397,7 @@ public class SchematicChunk {
 
 	static {
 		byte[] byteArray = new byte[2048];
-		Arrays.fill(byteArray, (byte) 127);
+		Arrays.fill(byteArray, Byte.MAX_VALUE);
 		fullSkyLight = new NibbleArray(byteArray);
 
 		try {
