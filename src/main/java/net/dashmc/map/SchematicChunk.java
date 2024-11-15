@@ -26,6 +26,8 @@ public class SchematicChunk {
 	public static int HEIGHT = 256;
 
 	static private Field chunkMapField;
+	static private Field fieldTickingBlockCount;
+	static private Field fieldNonEmptyBlockCount;
 	static private final ChunkSection emptySection = new ChunkSection(0, true);
 	static private NibbleArray fullSkyLight;
 
@@ -181,9 +183,6 @@ public class SchematicChunk {
 		try {
 			Collection<Entity>[] entities = nmsChunk.getEntitySlices();
 			ChunkSection[] sections = nmsChunk.getSections();
-			// java.util.Map<BlockPosition, TileEntity> tileEntities =
-			// nmsChunk.getTileEntities();
-			// Collection<Entity>[] entities = nmsChunk.getEntitySlices();
 
 			updateHeightMap();
 
@@ -213,9 +212,8 @@ public class SchematicChunk {
 				if (array == null)
 					continue;
 
-				Iterator<Entity> entIter = ents.iterator();
-				while (entIter.hasNext()) {
-					Entity entity = entIter.next();
+				Entity[] entsArr = ents.toArray(new Entity[ents.size()]);
+				for (Entity entity : entsArr) {
 					if (entity instanceof EntityPlayer)
 						continue;
 
@@ -247,7 +245,7 @@ public class SchematicChunk {
 					if (count == countAir)
 						continue;
 
-					sections[j] = section = new ChunkSection(j << 4, false, newArray);
+					sections[j] = section = new ChunkSection(j << 4, true, newArray);
 					continue;
 				}
 
@@ -256,9 +254,39 @@ public class SchematicChunk {
 						sections[j] = null;
 						continue;
 					}
-					sections[j] = section = new ChunkSection(j << 4, false, newArray);
+					sections[j] = section = new ChunkSection(j << 4, true, newArray);
 					continue;
 				}
+				// LIGHT UPDATE, SOLID BLOCKS, TICKING BLOCKS, NONEMPTY BLOCKS
+				// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/master/bukkit/src/main/java/com/boydti/fawe/bukkit/v1_8/BukkitChunk_1_8.java#L212
+
+				char[] currentArray = section.getIdArray();
+				int solid = 0;
+				int existingId;
+				for (int k = 0; k < newArray.length; k++) {
+					char n = newArray[k];
+					switch (n) {
+						case 0:
+							continue;
+						case 1:
+							existingId = currentArray[k];
+							if (existingId > 1) {
+								solid--;
+								currentArray[k] = 0;
+							}
+							continue;
+						default:
+							existingId = currentArray[k];
+							if (existingId <= 1)
+								solid++;
+							currentArray[k] = n;
+							continue;
+					}
+				}
+
+				int currNonEmptyBC = fieldNonEmptyBlockCount.getInt(section);
+				fieldNonEmptyBlockCount.set(section, currNonEmptyBC + solid);
+				fieldTickingBlockCount.set(section, 0);
 			}
 
 		} catch (Exception e) {
@@ -352,6 +380,12 @@ public class SchematicChunk {
 		try {
 			chunkMapField = PlayerChunkMap.class.getDeclaredField("d");
 			chunkMapField.setAccessible(true);
+
+			fieldNonEmptyBlockCount = ChunkSection.class.getDeclaredField("nonEmptyBlockCount");
+			fieldNonEmptyBlockCount.setAccessible(true);
+
+			fieldTickingBlockCount = ChunkSection.class.getDeclaredField("tickingBlockCount");
+			fieldTickingBlockCount.setAccessible(true);
 		} catch (Exception e) {
 		}
 	}

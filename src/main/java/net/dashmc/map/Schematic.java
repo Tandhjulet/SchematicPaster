@@ -102,19 +102,16 @@ public class Schematic {
 	public void load() {
 		Location placeAt = DashMC.getConf().getMapOrigin();
 
-		Bukkit.getLogger().info("Loading...");
+		Bukkit.getLogger().info("Loading... " + length * height * width);
 
 		for (int y = 0, index = 0; y < height; y++) {
-			Bukkit.getLogger().info("y: " + y);
 			for (int z = 0; z < length; z++) {
-				Bukkit.getLogger().info("z: " + z);
 				for (int x = 0; x < width; x++, index++) {
 					int cx = (x + placeAt.getBlockX()) >> 4;
 					int cz = (z + placeAt.getBlockZ()) >> 4;
-					Bukkit.getLogger().info("cx: " + cx + " cz: " + cz);
 
 					SchematicChunk schemChunk = map.getSchematicChunk(cx, cz);
-					schemChunk.setBlock(x & 15, y, z & 15, getBlock(index), 0);
+					schemChunk.setBlock(x & 15, y + placeAt.getBlockY(), z & 15, getBlock(index), 0);
 				}
 			}
 		}
