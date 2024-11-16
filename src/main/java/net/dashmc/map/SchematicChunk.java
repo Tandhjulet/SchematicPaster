@@ -2,7 +2,6 @@ package net.dashmc.map;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -32,7 +31,7 @@ public class SchematicChunk {
 	static private Method getOrCreatePlayerChunk;
 	static private Field fieldNonEmptyBlockCount;
 	static private final ChunkSection emptySection = new ChunkSection(0, true);
-	static private NibbleArray fullSkyLight;
+	static private byte[] fullSkyLight = new byte[2048];
 
 	private Chunk chunk;
 	public final char[][] ids;
@@ -243,60 +242,19 @@ public class SchematicChunk {
 
 				int countAir = this.air[j];
 				ChunkSection section = sections[j];
-				if (section == null) {
-					if (count == countAir)
-						continue;
-
-					sections[j] = section = new ChunkSection(j << 4, true, newArray);
-					section.b(fullSkyLight);
-					section.a(fullSkyLight);
+				if (section == null && count == countAir) {
 					continue;
 				}
 
-				if (count >= 4096) {
+				if (count >= 4096 && section != null) {
 					if (count == countAir) {
 						sections[j] = null;
 						continue;
 					}
-					sections[j] = section = new ChunkSection(j << 4, true, newArray);
-					section.b(fullSkyLight);
-					section.a(fullSkyLight);
-					continue;
 				}
+
 				sections[j] = section = new ChunkSection(j << 4, true, newArray);
-				section.b(fullSkyLight);
-				section.a(fullSkyLight);
-
-				// LIGHT UPDATE, SOLID BLOCKS, TICKING BLOCKS, NONEMPTY BLOCKS
-				// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/master/bukkit/src/main/java/com/boydti/fawe/bukkit/v1_8/BukkitChunk_1_8.java#L212
-
-				// char[] currentArray = section.getIdArray();
-				// int solid = 0;
-				// int existingId;
-				// for (int k = 0; k < newArray.length; k++) {
-				// char n = newArray[k];
-				// switch (n) {
-				// case 0:
-				// continue;
-				// case 1:
-				// existingId = currentArray[k];
-				// if (existingId > 1) {
-				// solid--;
-				// currentArray[k] = 0;
-				// }
-				// continue;
-				// default:
-				// existingId = currentArray[k];
-				// if (existingId <= 1)
-				// solid++;
-				// currentArray[k] = n;
-				// continue;
-				// }
-				// }
-
-				// int currNonEmptyBC = fieldNonEmptyBlockCount.getInt(section);
-				// fieldNonEmptyBlockCount.set(section, currNonEmptyBC + solid);
-				// fieldTickingBlockCount.set(section, 0);
+				section.a(new NibbleArray(fullSkyLight));
 			}
 
 		} catch (Exception e) {
@@ -340,8 +298,9 @@ public class SchematicChunk {
 					// Make bit mask reflect that this section is empty
 					bitMask ^= (1 << i);
 					empty = true;
+				} else {
+					sections[i].a(new NibbleArray(fullSkyLight));
 				}
-				sections[i].b(fullSkyLight);
 			}
 
 			// 0xffff = 65535 = all 16 bits are set
@@ -385,9 +344,17 @@ public class SchematicChunk {
 	}
 
 	static {
-		byte[] byteArray = new byte[2048];
-		Arrays.fill(byteArray, Byte.MAX_VALUE);
-		fullSkyLight = new NibbleArray(byteArray);
+		// Executed on startup so it doesnt matter that
+		// it's a bit inefficient.
+		NibbleArray nibbleArray = new NibbleArray();
+		for (int x = 0; x < 16; x++) {
+			for (int y = 0; y < 16; y++) {
+				for (int z = 0; z < 16; z++) {
+					nibbleArray.a(x, y, z, 15);
+				}
+			}
+		}
+		fullSkyLight = nibbleArray.a().clone();
 
 		try {
 			chunkMapField = PlayerChunkMap.class.getDeclaredField("d");

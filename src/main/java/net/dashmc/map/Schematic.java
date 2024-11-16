@@ -131,7 +131,7 @@ public class Schematic {
 		final int rely = to.getBlockY() + minPoint.getBlockY() - getMy();
 		final int relz = to.getBlockZ() + minPoint.getBlockZ() - getMz();
 
-		Bukkit.getLogger().info("Loading... " + length * height * width);
+		Bukkit.getLogger().info("Loading... (" + length * height * width + " blocks)");
 
 		for (int y = 0, index = 0; y < height; y++) {
 			for (int z = 0; z < length; z++) {
@@ -139,11 +139,6 @@ public class Schematic {
 					int xx = x + relx;
 					int zz = z + relz;
 					int yy = y + rely;
-					// setBlock(x, y, z, getId(index), 0);
-
-					// xx -= getMx();
-					// zz -= getMz();
-					// yy -= getMy();
 
 					setChunkBlock(xx, yy, zz, getId(index), getData(index));
 				}
