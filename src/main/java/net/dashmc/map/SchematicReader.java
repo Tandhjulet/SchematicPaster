@@ -61,8 +61,8 @@ public class SchematicReader {
 	}
 
 	public Schematic getSchematic() throws IOException {
-		readBlocks();
 		readDimensions();
+		readBlocks();
 		schematic.setDimensions(width, height, length);
 
 		return schematic;

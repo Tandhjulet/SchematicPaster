@@ -75,6 +75,10 @@ public class Schematic {
 		datas[index] = (byte) value;
 	}
 
+	private int getData(int index) {
+		return datas[index];
+	}
+
 	private int getId(int index) {
 		return ids[index] & 0xFF;
 	}
@@ -83,6 +87,14 @@ public class Schematic {
 		this.width = width;
 		this.height = height;
 		this.length = length;
+
+		this.area = width * length;
+		int newVolume = area * height;
+		if (newVolume != volume) {
+			volume = newVolume;
+			ids = new byte[volume];
+			datas = new byte[volume];
+		}
 	}
 
 	private int ylast;
@@ -108,22 +120,24 @@ public class Schematic {
 		for (int y = 0, index = 0; y < height; y++) {
 			for (int z = 0; z < length; z++) {
 				for (int x = 0; x < width; x++, index++) {
+					// setBlock(x, y, z, getId(index), 0);
+
 					int cx = (x + placeAt.getBlockX()) >> 4;
 					int cz = (z + placeAt.getBlockZ()) >> 4;
 
 					SchematicChunk schemChunk = map.getSchematicChunk(cx, cz);
-					schemChunk.setBlock(x & 15, y + placeAt.getBlockY(), z & 15, getBlock(index), 0);
+					schemChunk.setBlock(x & 15, y + placeAt.getBlockY(), z & 15, getBlock(index), getData(index));
 				}
 			}
 		}
 		loading.set(false);
 	}
 
-	public void setBlock(int x, int y, int z, short id, short data) {
+	public void setBlock(int x, int y, int z, int id, int data) {
 		setBlock(getIndex(x, y, z), id, data);
 	}
 
-	public void setBlock(int index, short id, short data) {
+	public void setBlock(int index, int id, int data) {
 		setId(index, id);
 		setData(index, data);
 	}

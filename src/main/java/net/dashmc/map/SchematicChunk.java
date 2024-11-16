@@ -1,6 +1,7 @@
 package net.dashmc.map;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -15,8 +16,8 @@ import net.dashmc.util.MathUtils;
 import net.minecraft.server.v1_8_R3.ChunkSection;
 import net.minecraft.server.v1_8_R3.Entity;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
-import net.minecraft.server.v1_8_R3.LongHashMap;
 import net.minecraft.server.v1_8_R3.NibbleArray;
+import net.minecraft.server.v1_8_R3.Packet;
 import net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk;
 import net.minecraft.server.v1_8_R3.PacketPlayOutTileEntityData;
 import net.minecraft.server.v1_8_R3.PlayerChunkMap;
@@ -28,6 +29,7 @@ public class SchematicChunk {
 
 	static private Field chunkMapField;
 	static private Field fieldTickingBlockCount;
+	static private Method getOrCreatePlayerChunk;
 	static private Field fieldNonEmptyBlockCount;
 	static private final ChunkSection emptySection = new ChunkSection(0, true);
 	static private NibbleArray fullSkyLight;
@@ -72,7 +74,7 @@ public class SchematicChunk {
 		}
 	}
 
-	// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/e3a89ad9d4a0437af48be84af0088901a3d6c822/core/src/main/java/com/boydti/fawe/example/CharFaweChunk.java#L136
+	// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/e3a89ad9d4a0437af48be84af0088901a3d6c822/core/src/main/java/com/boydti/fawe/example/CharFaweChunk.java#L195
 	public void setBlock(int x, int y, int z, int id, int data) {
 		final int i = DashMC.CACHE_I[y][z][x];
 		final int j = DashMC.CACHE_J[y][z][x];
@@ -306,8 +308,7 @@ public class SchematicChunk {
 	}
 
 	public void sendChunk() {
-		World bukkitWorld = DashMC.getConf().getMapOrigin().getWorld();
-		net.minecraft.server.v1_8_R3.Chunk nmsChunk = getCachedChunk(bukkitWorld);
+		net.minecraft.server.v1_8_R3.Chunk nmsChunk = ((CraftChunk) chunk).getHandle();
 		if (nmsChunk == null)
 			return;
 
@@ -317,25 +318,13 @@ public class SchematicChunk {
 
 			int x = nmsChunk.locX;
 			int z = nmsChunk.locZ;
-			if (chunkMap.isChunkInUse(x, z))
+			if (!chunkMap.isChunkInUse(x, z))
 				return;
 
-			@SuppressWarnings("unchecked")
-			LongHashMap<Object> map = (LongHashMap<Object>) chunkMapField.get(chunkMap);
+			Object playerChunk = getOrCreatePlayerChunk.invoke(chunkMap, x, z, true);
 
-			// builds a unique key, with x coordinate filling the last 4 bytes, and z the
-			// first 4
-			long pair = (long) x + 2147483647L | (long) z + 2147483647L << 32;
-
-			// The class PlayerChunk and it's associated fields are private
-			Object playerChunk = map.getEntry(pair);
-			Field fieldPlayers = playerChunk.getClass().getDeclaredField("b");
-			fieldPlayers.setAccessible(true);
-
-			@SuppressWarnings("unchecked")
-			Collection<EntityPlayer> players = (Collection<EntityPlayer>) fieldPlayers.get(playerChunk);
-			if (players.isEmpty())
-				return;
+			Method sendPacketToPlayers = playerChunk.getClass().getMethod("a", Packet.class);
+			sendPacketToPlayers.setAccessible(true);
 
 			boolean empty = false;
 			ChunkSection[] sections = nmsChunk.getSections();
@@ -355,22 +344,18 @@ public class SchematicChunk {
 			}
 
 			// 0xffff = 65535 = all 16 bits are set
-			if (bitMask == 0 || bitMask == 0xffff) {
+			if (bitMask == 0 || bitMask == 0xFFFF) {
 				// First 8 bits
-				PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(nmsChunk, false, 65280);
-				for (EntityPlayer player : players) {
-					player.playerConnection.sendPacket(packet);
-				}
+				PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(nmsChunk, false, 0xFF00);
+				sendPacketToPlayers.invoke(playerChunk, packet);
 
 				// Last 8 bits
-				bitMask = 255;
+				bitMask = 0x00FF;
 			}
 
 			// Send packet with "normal" blocks
 			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(nmsChunk, false, bitMask);
-			players.forEach((player) -> {
-				player.playerConnection.sendPacket(packet);
-			});
+			sendPacketToPlayers.invoke(playerChunk, packet);
 
 			// Send packets with Tile Entities
 			nmsChunk.getTileEntities().entrySet().forEach((entry) -> {
@@ -378,9 +363,12 @@ public class SchematicChunk {
 				PacketPlayOutTileEntityData tileUpdatePacket = (PacketPlayOutTileEntityData) tileEntity
 						.getUpdatePacket();
 
-				players.forEach((player) -> {
-					player.playerConnection.sendPacket(tileUpdatePacket);
-				});
+				try {
+					sendPacketToPlayers.invoke(playerChunk, tileUpdatePacket);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 			});
 
 			if (empty) {
@@ -409,6 +397,9 @@ public class SchematicChunk {
 
 			fieldTickingBlockCount = ChunkSection.class.getDeclaredField("tickingBlockCount");
 			fieldTickingBlockCount.setAccessible(true);
+
+			getOrCreatePlayerChunk = PlayerChunkMap.class.getDeclaredMethod("a", int.class, int.class, boolean.class);
+			getOrCreatePlayerChunk.setAccessible(true);
 		} catch (Exception e) {
 		}
 	}
