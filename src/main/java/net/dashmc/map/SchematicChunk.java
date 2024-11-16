@@ -263,39 +263,40 @@ public class SchematicChunk {
 					section.a(fullSkyLight);
 					continue;
 				}
+				sections[j] = section = new ChunkSection(j << 4, true, newArray);
 				section.b(fullSkyLight);
 				section.a(fullSkyLight);
 
 				// LIGHT UPDATE, SOLID BLOCKS, TICKING BLOCKS, NONEMPTY BLOCKS
 				// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/master/bukkit/src/main/java/com/boydti/fawe/bukkit/v1_8/BukkitChunk_1_8.java#L212
 
-				char[] currentArray = section.getIdArray();
-				int solid = 0;
-				int existingId;
-				for (int k = 0; k < newArray.length; k++) {
-					char n = newArray[k];
-					switch (n) {
-						case 0:
-							continue;
-						case 1:
-							existingId = currentArray[k];
-							if (existingId > 1) {
-								solid--;
-								currentArray[k] = 0;
-							}
-							continue;
-						default:
-							existingId = currentArray[k];
-							if (existingId <= 1)
-								solid++;
-							currentArray[k] = n;
-							continue;
-					}
-				}
+				// char[] currentArray = section.getIdArray();
+				// int solid = 0;
+				// int existingId;
+				// for (int k = 0; k < newArray.length; k++) {
+				// char n = newArray[k];
+				// switch (n) {
+				// case 0:
+				// continue;
+				// case 1:
+				// existingId = currentArray[k];
+				// if (existingId > 1) {
+				// solid--;
+				// currentArray[k] = 0;
+				// }
+				// continue;
+				// default:
+				// existingId = currentArray[k];
+				// if (existingId <= 1)
+				// solid++;
+				// currentArray[k] = n;
+				// continue;
+				// }
+				// }
 
-				int currNonEmptyBC = fieldNonEmptyBlockCount.getInt(section);
-				fieldNonEmptyBlockCount.set(section, currNonEmptyBC + solid);
-				fieldTickingBlockCount.set(section, 0);
+				// int currNonEmptyBC = fieldNonEmptyBlockCount.getInt(section);
+				// fieldNonEmptyBlockCount.set(section, currNonEmptyBC + solid);
+				// fieldTickingBlockCount.set(section, 0);
 			}
 
 		} catch (Exception e) {

@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 
 import lombok.Data;
 import net.dashmc.DashMC;
@@ -42,6 +43,12 @@ public class Schematic {
 
 	private byte[] ids;
 	private byte[] datas;
+
+	private int mx;
+	private int my;
+	private int mz;
+
+	private Vector minPoint;
 
 	public Schematic(int width, int height, int length) throws IOException {
 		this.width = width;
@@ -83,6 +90,12 @@ public class Schematic {
 		return ids[index] & 0xFF;
 	}
 
+	public void setOrigin(Vector origin) {
+		mx = origin.getBlockX();
+		mz = origin.getBlockZ();
+		my = origin.getBlockY();
+	}
+
 	public void setDimensions(int width, int height, int length) {
 		this.width = width;
 		this.height = height;
@@ -113,24 +126,38 @@ public class Schematic {
 	}
 
 	public void load() {
-		Location placeAt = DashMC.getConf().getMapOrigin();
+		Location to = DashMC.getConf().getMapOrigin();
+		final int relx = to.getBlockX() + minPoint.getBlockX() - getMx();
+		final int rely = to.getBlockY() + minPoint.getBlockY() - getMy();
+		final int relz = to.getBlockZ() + minPoint.getBlockZ() - getMz();
 
 		Bukkit.getLogger().info("Loading... " + length * height * width);
 
 		for (int y = 0, index = 0; y < height; y++) {
 			for (int z = 0; z < length; z++) {
 				for (int x = 0; x < width; x++, index++) {
+					int xx = x + relx;
+					int zz = z + relz;
+					int yy = y + rely;
 					// setBlock(x, y, z, getId(index), 0);
 
-					int cx = (x + placeAt.getBlockX()) >> 4;
-					int cz = (z + placeAt.getBlockZ()) >> 4;
+					// xx -= getMx();
+					// zz -= getMz();
+					// yy -= getMy();
 
-					SchematicChunk schemChunk = map.getSchematicChunk(cx, cz);
-					schemChunk.setBlock(x & 15, y + placeAt.getBlockY(), z & 15, getBlock(index), getData(index));
+					setChunkBlock(xx, yy, zz, getId(index), getData(index));
 				}
 			}
 		}
 		loading.set(false);
+	}
+
+	private void setChunkBlock(int x, int y, int z, int id, int data) {
+		int cx = x >> 4;
+		int cz = z >> 4;
+
+		SchematicChunk schemChunk = map.getSchematicChunk(cx, cz);
+		schemChunk.setBlock(x & 15, y, z & 15, id, data);
 	}
 
 	public void setBlock(int x, int y, int z, int id, int data) {

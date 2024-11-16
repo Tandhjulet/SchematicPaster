@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.bukkit.Bukkit;
+import org.bukkit.util.Vector;
+
 import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 
@@ -22,10 +25,26 @@ public class SchematicReader {
 	int width;
 	int length;
 
+	private int originX;
+	private int originY;
+	private int originZ;
+
+	private int offsetX;
+	private int offsetY;
+	private int offsetZ;
+
 	public void readDimensions() {
 		width = nbtTagCompound.getShort("Width");
 		height = nbtTagCompound.getShort("Height");
 		length = nbtTagCompound.getShort("Length");
+
+		originX = nbtTagCompound.getInt("WEOriginX");
+		originY = nbtTagCompound.getInt("WEOriginY");
+		originZ = nbtTagCompound.getInt("WEOriginZ");
+
+		offsetX = nbtTagCompound.getInt("WEOffsetX");
+		offsetY = nbtTagCompound.getInt("WEOffsetY");
+		offsetZ = nbtTagCompound.getInt("WEOffsetZ");
 	}
 
 	public void readBlocks() throws IOException {
@@ -63,6 +82,18 @@ public class SchematicReader {
 	public Schematic getSchematic() throws IOException {
 		readDimensions();
 		readBlocks();
+
+		Vector min = new Vector(originX, originY, originZ);
+		Vector offset = new Vector(offsetX, offsetY, offsetZ);
+
+		schematic.setMinPoint(min.clone());
+		schematic.setOrigin(min.subtract(offset));
+
+		Bukkit.getLogger()
+				.info("min/origin: x: " + min.getBlockX() + " y: " + min.getBlockY() + " z: " + min.getBlockZ());
+		Bukkit.getLogger()
+				.info("offset: x: " + offset.getBlockX() + " y: " + offset.getBlockY() + " z: " + offset.getBlockZ());
+
 		schematic.setDimensions(width, height, length);
 
 		return schematic;
