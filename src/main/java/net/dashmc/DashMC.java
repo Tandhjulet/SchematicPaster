@@ -51,24 +51,68 @@ public class DashMC extends JavaPlugin {
 		return null;
 	}
 
-	public static boolean hasLight(int id) {
+	public static boolean hasNBT(int id) {
 		switch (id) {
-			case 39:
-			case 40:
-			case 50:
-			case 51:
-			case 76:
-			case 10:
-			case 11:
-			case 62:
-			case 74:
-			case 89:
-			case 122:
-			case 124:
+			case 26:
+			case 218:
+			case 54:
 			case 130:
+			case 142:
+			case 27:
+			case 137:
+			case 188:
+			case 189:
+			case 52:
+			case 154:
+			case 84:
+			case 25:
+			case 144:
 			case 138:
-			case 169:
-			case 213:
+			case 176:
+			case 177:
+			case 63:
+			case 119:
+			case 68:
+			case 323:
+			case 117:
+			case 116:
+			case 28:
+			case 66:
+			case 157:
+			case 61:
+			case 62:
+			case 140:
+			case 146:
+			case 149:
+			case 150:
+			case 158:
+			case 23:
+			case 123:
+			case 124:
+			case 29:
+			case 33:
+			case 151:
+			case 178:
+			case 209:
+			case 210:
+			case 211:
+			case 255:
+			case 219:
+			case 220:
+			case 221:
+			case 222:
+			case 223:
+			case 224:
+			case 225:
+			case 226:
+			case 227:
+			case 228:
+			case 229:
+			case 230:
+			case 231:
+			case 232:
+			case 233:
+			case 234:
 				return true;
 			default:
 				return false;

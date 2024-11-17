@@ -3,7 +3,9 @@ package net.dashmc.map;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -12,9 +14,11 @@ import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 
 import net.dashmc.DashMC;
 import net.dashmc.util.MathUtils;
+import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
 import net.minecraft.server.v1_8_R3.Entity;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NibbleArray;
 import net.minecraft.server.v1_8_R3.Packet;
 import net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk;
@@ -40,6 +44,8 @@ public class SchematicChunk {
 	public final byte[] heightMap;
 
 	private int x, z;
+
+	private HashMap<Short, NBTTagCompound> tiles = new HashMap<>();
 
 	public SchematicChunk(int x, int z) {
 		this.x = x;
@@ -164,6 +170,13 @@ public class SchematicChunk {
 		}
 	}
 
+	public void setTile(int x, int y, int z, NBTTagCompound nbtTagCompound) {
+		if (nbtTagCompound == null || nbtTagCompound.isEmpty())
+			return;
+		short pair = (short) ((x & 15) << 12 | (z & 15) << 8 | y);
+		tiles.put(pair, nbtTagCompound);
+	}
+
 	public Chunk getChunk() {
 		if (chunk == null) {
 			World bukkitWorld = DashMC.getConf().getMapOrigin().getWorld();
@@ -175,6 +188,9 @@ public class SchematicChunk {
 	public void update() {
 		CraftChunk chunk = (CraftChunk) getChunk();
 		net.minecraft.server.v1_8_R3.Chunk nmsChunk = chunk.getHandle();
+
+		int bx = x << 4;
+		int bz = z << 4;
 
 		// Chunk has been modified
 		nmsChunk.f(true);
@@ -255,6 +271,24 @@ public class SchematicChunk {
 
 				sections[j] = section = new ChunkSection(j << 4, true, newArray);
 				section.a(new NibbleArray(fullSkyLight));
+			}
+			// Set tiles/blocks with NBT
+			for (Map.Entry<Short, NBTTagCompound> entry : tiles.entrySet()) {
+				short coordPair = entry.getKey();
+				int x = (coordPair >> 12 & 0xF) + bx;
+				int y = coordPair & 0xFF;
+				int z = (coordPair >> 8 & 0xF) + bz;
+
+				BlockPosition blockPosition = new BlockPosition(x, y, z);
+				TileEntity tileEntity = nmsWorld.getTileEntity(blockPosition);
+				if (tileEntity == null)
+					continue;
+
+				NBTTagCompound tag = entry.getValue();
+				tag.setInt("x", x);
+				tag.setInt("y", y);
+				tag.setInt("z", z);
+				tileEntity.a(tag);
 			}
 
 		} catch (Exception e) {

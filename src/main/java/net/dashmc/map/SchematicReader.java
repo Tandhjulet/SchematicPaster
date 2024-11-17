@@ -5,11 +5,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.bukkit.Bukkit;
 import org.bukkit.util.Vector;
 
 import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
+import net.minecraft.server.v1_8_R3.NBTTagList;
 
 public class SchematicReader {
 	private Schematic schematic;
@@ -66,6 +66,15 @@ public class SchematicReader {
 
 			schematic.setData(i, data[i]);
 		}
+
+		NBTTagList compoundList = nbtTagCompound.getList("TileEntities", 10);
+		for (int i = 0; i < compoundList.size(); i++) {
+			NBTTagCompound compound = compoundList.get(i);
+			int x = compound.getInt("x");
+			int y = compound.getInt("y");
+			int z = compound.getInt("z");
+			schematic.setTile(x, y, z, compound);
+		}
 	}
 
 	private Schematic setupSchematic(int size) throws IOException {
@@ -88,11 +97,6 @@ public class SchematicReader {
 
 		schematic.setMinPoint(min.clone());
 		schematic.setOrigin(min.subtract(offset));
-
-		Bukkit.getLogger()
-				.info("min/origin: x: " + min.getBlockX() + " y: " + min.getBlockY() + " z: " + min.getBlockZ());
-		Bukkit.getLogger()
-				.info("offset: x: " + offset.getBlockX() + " y: " + offset.getBlockY() + " z: " + offset.getBlockZ());
 
 		schematic.setDimensions(width, height, length);
 
