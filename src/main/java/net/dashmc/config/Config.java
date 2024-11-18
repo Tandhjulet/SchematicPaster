@@ -30,4 +30,8 @@ public class Config extends OkaeriConfig {
 		@Comment("Path to schematic file")
 		private String schemFile = "test.schem";
 	}
+
+	@Getter
+	@Comment("Max chunks to place pr. tick. Set to -1 to disable.")
+	private Integer maxChunks = -1;
 }

@@ -18,7 +18,7 @@
 		<repository>
 			<id>okaeri-repo</id>
 			<url>https://storehouse.okaeri.eu/repository/maven-public/</url>
-		</repository>		
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -56,6 +56,13 @@
 
 	<build>
 		<defaultGoal>clean install</defaultGoal>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 
 		<plugins>
 			<plugin>

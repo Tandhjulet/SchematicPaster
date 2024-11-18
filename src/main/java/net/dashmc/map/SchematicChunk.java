@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -200,6 +201,7 @@ public class SchematicChunk {
 		try {
 			Collection<Entity>[] entities = nmsChunk.getEntitySlices();
 			ChunkSection[] sections = nmsChunk.getSections();
+			Map<BlockPosition, TileEntity> tileEntities = nmsChunk.getTileEntities();
 
 			updateHeightMap();
 
@@ -272,6 +274,18 @@ public class SchematicChunk {
 				sections[j] = section = new ChunkSection(j << 4, true, newArray);
 				section.a(new NibbleArray(fullSkyLight));
 			}
+
+			// Remove old tile entities
+			for (Entry<BlockPosition, TileEntity> entry : tileEntities.entrySet()) {
+				BlockPosition blockPosition = entry.getKey();
+				TileEntity tileEntity = entry.getValue();
+
+				tileEntities.remove(blockPosition);
+				nmsWorld.t(blockPosition);
+				tileEntity.y();
+				tileEntity.E();
+			}
+
 			// Set tiles/blocks with NBT
 			for (Map.Entry<Short, NBTTagCompound> entry : tiles.entrySet()) {
 				short coordPair = entry.getKey();

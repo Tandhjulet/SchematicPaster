@@ -14,7 +14,6 @@ import lombok.Data;
 import net.dashmc.DashMC;
 import net.dashmc.object.SimpleLocation;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
-import net.minecraft.server.v1_8_R3.NBTTagList;
 
 @Data
 public class Schematic {
@@ -39,9 +38,6 @@ public class Schematic {
 
 	private int area;
 	private int volume;
-
-	private NBTTagList entities;
-	private NBTTagList tileEntities;
 
 	private byte[] ids;
 	private byte[] datas;
@@ -77,6 +73,7 @@ public class Schematic {
 
 		// TODO: Make async
 		Collection<SchematicChunk> chunks = map.getSchematicChunks();
+
 		for (SchematicChunk chunk : chunks) {
 			chunk.update();
 			chunk.sendChunk();
@@ -179,7 +176,16 @@ public class Schematic {
 				}
 			}
 		}
+		deleteData();
 		loading.set(false);
+	}
+
+	public void deleteData() {
+		ids = new byte[0];
+		datas = new byte[0];
+
+		nbtMapIndex.clear();
+		nbtMapLoc.clear();
 	}
 
 	private NBTTagCompound getTag(int index) {
