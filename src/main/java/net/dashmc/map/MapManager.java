@@ -44,7 +44,6 @@ public class MapManager {
 
 	public void pasteMap(int index) {
 		Schematic map = maps.get(index);
-		Bukkit.getLogger().info("Loading...");
 		map.load();
 		Bukkit.getLogger().info("Pasting...");
 		map.paste();

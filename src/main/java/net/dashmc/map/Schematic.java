@@ -90,6 +90,7 @@ public class Schematic {
 				for (int i = 0; i < maxChunks; i++) {
 					if (!chunkIterator.hasNext()) {
 						cancel();
+						map.chunks.clear();
 						Bukkit.getLogger()
 								.info("Done pasting. Took " + (System.currentTimeMillis() - time) + "ms!");
 						return;
@@ -187,7 +188,7 @@ public class Schematic {
 		final int rely = to.getBlockY() + minPoint.getBlockY() - getMy();
 		final int relz = to.getBlockZ() + minPoint.getBlockZ() - getMz();
 
-		Bukkit.getLogger().info("Loading... (" + length * height * width + " blocks)");
+		Bukkit.getLogger().info("[DashMC] Loading " + length * height * width + " blocks)");
 
 		for (int y = 0, index = 0; y < height; y++) {
 			for (int z = 0; z < length; z++) {
@@ -200,8 +201,9 @@ public class Schematic {
 				}
 			}
 		}
-		deleteData();
+		// deleteData();
 		loading.set(false);
+		Bukkit.getLogger().info("[DashMC] Finished loading.");
 	}
 
 	public void deleteData() {
