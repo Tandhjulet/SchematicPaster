@@ -48,7 +48,6 @@ public class MapManager {
 		map.load();
 		Bukkit.getLogger().info("Pasting...");
 		map.paste();
-		Bukkit.getLogger().info("Done...");
 	}
 
 	public static MapManager get() {

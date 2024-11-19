@@ -2,7 +2,9 @@ package net.dashmc;
 
 import java.io.File;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import eu.okaeri.configs.ConfigManager;
@@ -11,6 +13,7 @@ import eu.okaeri.configs.yaml.bukkit.serdes.SerdesBukkit;
 import lombok.Getter;
 import net.dashmc.commands.CommandDash;
 import net.dashmc.config.Config;
+import net.dashmc.map.ChunkProvider;
 import net.dashmc.map.MapManager;
 
 public class DashMC extends JavaPlugin {
@@ -42,6 +45,16 @@ public class DashMC extends JavaPlugin {
 			conf.saveDefaults();
 			conf.load(true);
 		});
+
+		try {
+			Bukkit.getLogger().info("[DashMC] Injecting custom ServerChunkProvider");
+			CraftWorld world = (CraftWorld) conf.getMapOrigin().getWorld();
+			ChunkProvider.inject(world.getHandle());
+		} catch (IllegalArgumentException | IllegalAccessException | CloneNotSupportedException e) {
+			Bukkit.getLogger().severe("Failed to inject ChunkProvider.");
+			ChunkProvider.setInjected(false);
+			e.printStackTrace();
+		}
 
 		CommandDash.register();
 		MapManager.get();

@@ -1,13 +1,14 @@
 package net.dashmc.map;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import lombok.Data;
@@ -17,6 +18,8 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 
 @Data
 public class Schematic {
+	private long time = 0;
+
 	private ChunkMap map = new ChunkMap();
 
 	private AtomicBoolean loading = new AtomicBoolean(true);
@@ -65,25 +68,46 @@ public class Schematic {
 		nbtMapIndex = new HashMap<>();
 	}
 
+	public void getChunks() {
+
+	}
+
 	public void paste() {
 		if (loading.get()) {
 			Bukkit.getLogger().warning("Not finished loading.");
 			return;
 		}
 
-		// TODO: Make async
-		Collection<SchematicChunk> chunks = map.getSchematicChunks();
+		time = System.currentTimeMillis();
 
-		for (SchematicChunk chunk : chunks) {
-			chunk.update();
-			chunk.sendChunk();
-		}
+		BukkitRunnable runnable = new BukkitRunnable() {
+			Iterator<SchematicChunk> chunkIterator = map.getSchematicChunks().iterator();
+			int maxChunks = (DashMC.getConf().getMaxChunksPerSecond() == -1) ? map.getSchematicChunks().size()
+					: DashMC.getConf().getMaxChunksPerSecond();
+
+			@Override
+			public void run() {
+				for (int i = 0; i < maxChunks; i++) {
+					if (!chunkIterator.hasNext()) {
+						cancel();
+						Bukkit.getLogger()
+								.info("Done pasting. Took " + (System.currentTimeMillis() - time) + "ms!");
+						return;
+					}
+					SchematicChunk chunk = chunkIterator.next();
+					chunk.update();
+					chunk.sendChunk();
+				}
+			}
+		};
+		runnable.runTaskTimer(DashMC.getPlugin(), 0L, 20L);
 	}
 
 	public void convertTilesToIndex() {
 		if (nbtMapLoc.isEmpty()) {
 			return;
 		}
+
 		for (Map.Entry<SimpleLocation, NBTTagCompound> entry : nbtMapLoc.entrySet()) {
 			SimpleLocation key = entry.getKey();
 			setTile(getIndex(key.getX(), key.getY(), key.getZ()), entry.getValue());

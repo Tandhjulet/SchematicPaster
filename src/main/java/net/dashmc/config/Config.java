@@ -32,6 +32,6 @@ public class Config extends OkaeriConfig {
 	}
 
 	@Getter
-	@Comment("Max chunks to place pr. tick. Set to -1 to disable.")
-	private Integer maxChunks = -1;
+	@Comment("Max chunks to place pr. second. Set to -1 to disable.")
+	private Integer maxChunksPerSecond = -1;
 }

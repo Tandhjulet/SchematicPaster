@@ -180,8 +180,13 @@ public class SchematicChunk {
 
 	public Chunk getChunk() {
 		if (chunk == null) {
-			World bukkitWorld = DashMC.getConf().getMapOrigin().getWorld();
-			chunk = bukkitWorld.getChunkAt(x, z);
+			WorldServer bukkitWorld = ((CraftWorld) DashMC.getConf().getMapOrigin().getWorld()).getHandle();
+			if (ChunkProvider.isInjected()) {
+				ChunkProvider chunkProvider = ((ChunkProvider) bukkitWorld.chunkProviderServer);
+				chunk = chunkProvider.getChunkAt(x, z, null, false).bukkitChunk;
+			} else {
+				chunk = bukkitWorld.getChunkAt(x, z).bukkitChunk;
+			}
 		}
 		return chunk;
 	}
@@ -246,7 +251,6 @@ public class SchematicChunk {
 					}
 				}
 			}
-			// Set entities
 
 			// Set blocks
 			for (int j = 0; j < sections.length; j++) {
@@ -280,7 +284,7 @@ public class SchematicChunk {
 				BlockPosition blockPosition = entry.getKey();
 				TileEntity tileEntity = entry.getValue();
 
-				tileEntities.remove(blockPosition);
+				nmsChunk.tileEntities.remove(blockPosition);
 				nmsWorld.t(blockPosition);
 				tileEntity.y();
 				tileEntity.E();
@@ -330,6 +334,7 @@ public class SchematicChunk {
 
 			Object playerChunk = getOrCreatePlayerChunk.invoke(chunkMap, x, z, true);
 
+			// https://github.com/Attano/Spigot-1.8/blob/master/net/minecraft/server/v1_8_R3/PlayerChunkMap.java#L440
 			Method sendPacketToPlayers = playerChunk.getClass().getMethod("a", Packet.class);
 			sendPacketToPlayers.setAccessible(true);
 
@@ -414,6 +419,7 @@ public class SchematicChunk {
 			fieldTickingBlockCount = ChunkSection.class.getDeclaredField("tickingBlockCount");
 			fieldTickingBlockCount.setAccessible(true);
 
+			// https://github.com/Attano/Spigot-1.8/blob/master/net/minecraft/server/v1_8_R3/PlayerChunkMap.java#L88
 			getOrCreatePlayerChunk = PlayerChunkMap.class.getDeclaredMethod("a", int.class, int.class, boolean.class);
 			getOrCreatePlayerChunk.setAccessible(true);
 		} catch (Exception e) {
