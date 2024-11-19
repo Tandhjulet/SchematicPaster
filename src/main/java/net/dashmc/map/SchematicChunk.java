@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
@@ -206,7 +207,6 @@ public class SchematicChunk {
 		try {
 			Collection<Entity>[] entities = nmsChunk.getEntitySlices();
 			ChunkSection[] sections = nmsChunk.getSections();
-			Map<BlockPosition, TileEntity> tileEntities = nmsChunk.getTileEntities();
 
 			updateHeightMap();
 
@@ -280,14 +280,23 @@ public class SchematicChunk {
 			}
 
 			// Remove old tile entities
-			for (Entry<BlockPosition, TileEntity> entry : tileEntities.entrySet()) {
-				BlockPosition blockPosition = entry.getKey();
-				TileEntity tileEntity = entry.getValue();
+			Map<BlockPosition, TileEntity> tileEntities = nmsChunk.tileEntities;
+			synchronized (tileEntities) {
+				try {
+					for (Entry<BlockPosition, TileEntity> entry : tileEntities.entrySet()) {
+						TileEntity tileEntity = entry.getValue();
 
-				nmsChunk.tileEntities.remove(blockPosition);
-				nmsWorld.t(blockPosition);
-				tileEntity.y();
-				tileEntity.E();
+						nmsWorld.t(entry.getKey());
+						tileEntity.y();
+						tileEntity.E();
+					}
+				} catch (Exception e) {
+					// This TileEntity has most likely already been deleted.
+					// Let's log it anyway.
+					Bukkit.getLogger()
+							.warning("[DashMC] Tried to remove non-existent TileEntity: " + e.getMessage());
+				}
+				nmsChunk.tileEntities.clear();
 			}
 
 			// Set tiles/blocks with NBT
