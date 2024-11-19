@@ -45,7 +45,7 @@ public class MapManager {
 	public void pasteMap(int index) {
 		Schematic map = maps.get(index);
 		map.load();
-		Bukkit.getLogger().info("Pasting...");
+		Bukkit.getLogger().info("[DashMC] Pasting...");
 		map.paste();
 	}
 

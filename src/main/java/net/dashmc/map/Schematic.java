@@ -68,13 +68,9 @@ public class Schematic {
 		nbtMapIndex = new HashMap<>();
 	}
 
-	public void getChunks() {
-
-	}
-
 	public void paste() {
 		if (loading.get()) {
-			Bukkit.getLogger().warning("Not finished loading.");
+			Bukkit.getLogger().warning("[DashMC] Did not finish loading before paste was attempted.");
 			return;
 		}
 
@@ -92,7 +88,7 @@ public class Schematic {
 						cancel();
 						map.chunks.clear();
 						Bukkit.getLogger()
-								.info("Done pasting. Took " + (System.currentTimeMillis() - time) + "ms!");
+								.info("[DashMC] Done pasting. Took " + (System.currentTimeMillis() - time) + "ms!");
 						return;
 					}
 					SchematicChunk chunk = chunkIterator.next();
@@ -188,7 +184,7 @@ public class Schematic {
 		final int rely = to.getBlockY() + minPoint.getBlockY() - getMy();
 		final int relz = to.getBlockZ() + minPoint.getBlockZ() - getMz();
 
-		Bukkit.getLogger().info("[DashMC] Loading " + length * height * width + " blocks)");
+		Bukkit.getLogger().info("[DashMC] Loading " + length * height * width + " blocks...");
 
 		for (int y = 0, index = 0; y < height; y++) {
 			for (int z = 0; z < length; z++) {
