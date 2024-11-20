@@ -7,6 +7,7 @@
 	<groupId>dk.tandhjulet</groupId>
 	<artifactId>schematic</artifactId>
 	<version>1.0</version>
+	<name>SchematicPaster</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -56,6 +57,7 @@
 
 	<build>
 		<defaultGoal>clean install</defaultGoal>
+		<finalName>${project.name}-${project.version}</finalName>
 
 		<resources>
 			<resource>
