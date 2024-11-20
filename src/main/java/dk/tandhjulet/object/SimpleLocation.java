@@ -1,4 +1,4 @@
-package net.dashmc.object;
+package dk.tandhjulet.object;
 
 import lombok.Getter;
 

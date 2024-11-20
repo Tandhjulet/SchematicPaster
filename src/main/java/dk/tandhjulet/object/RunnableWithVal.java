@@ -1,4 +1,4 @@
-package net.dashmc.object;
+package dk.tandhjulet.object;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

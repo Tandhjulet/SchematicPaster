@@ -1,11 +1,11 @@
-package net.dashmc.map;
+package dk.tandhjulet.map;
 
 import java.util.Collection;
 import java.util.Map;
 
+import dk.tandhjulet.object.RunnableWithVal;
+import dk.tandhjulet.util.MathUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.dashmc.object.RunnableWithVal;
-import net.dashmc.util.MathUtils;
 
 public class ChunkMap {
 	private volatile SchematicChunk lastWrappedChunk;

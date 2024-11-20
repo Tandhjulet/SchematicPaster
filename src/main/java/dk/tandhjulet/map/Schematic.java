@@ -1,4 +1,4 @@
-package net.dashmc.map;
+package dk.tandhjulet.map;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -11,9 +11,9 @@ import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import dk.tandhjulet.SchematicPaster;
+import dk.tandhjulet.object.SimpleLocation;
 import lombok.Data;
-import net.dashmc.DashMC;
-import net.dashmc.object.SimpleLocation;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 
 @Data
@@ -70,7 +70,7 @@ public class Schematic {
 
 	public void paste() {
 		if (loading.get()) {
-			Bukkit.getLogger().warning("[DashMC] Did not finish loading before paste was attempted.");
+			Bukkit.getLogger().warning("[SchematicPaster] Did not finish loading before paste was attempted.");
 			return;
 		}
 
@@ -78,8 +78,8 @@ public class Schematic {
 
 		BukkitRunnable runnable = new BukkitRunnable() {
 			Iterator<SchematicChunk> chunkIterator = map.getSchematicChunks().iterator();
-			int maxChunks = (DashMC.getConf().getMaxChunksPerSecond() == -1) ? map.getSchematicChunks().size()
-					: DashMC.getConf().getMaxChunksPerSecond();
+			int maxChunks = (SchematicPaster.getConf().getMaxChunksPerSecond() == -1) ? map.getSchematicChunks().size()
+					: SchematicPaster.getConf().getMaxChunksPerSecond();
 
 			@Override
 			public void run() {
@@ -88,7 +88,8 @@ public class Schematic {
 						cancel();
 						map.chunks.clear();
 						Bukkit.getLogger()
-								.info("[DashMC] Done pasting. Took " + (System.currentTimeMillis() - time) + "ms!");
+								.info("[SchematicPaster] Done pasting. Took " + (System.currentTimeMillis() - time)
+										+ "ms!");
 						return;
 					}
 					SchematicChunk chunk = chunkIterator.next();
@@ -97,7 +98,7 @@ public class Schematic {
 				}
 			}
 		};
-		runnable.runTaskTimer(DashMC.getPlugin(), 0L, 20L);
+		runnable.runTaskTimer(SchematicPaster.getPlugin(), 0L, 20L);
 	}
 
 	public void convertTilesToIndex() {
@@ -179,12 +180,12 @@ public class Schematic {
 	}
 
 	public void load() {
-		Location to = DashMC.getConf().getMapOrigin();
+		Location to = SchematicPaster.getConf().getMapOrigin();
 		final int relx = to.getBlockX() + minPoint.getBlockX() - getMx();
 		final int rely = to.getBlockY() + minPoint.getBlockY() - getMy();
 		final int relz = to.getBlockZ() + minPoint.getBlockZ() - getMz();
 
-		Bukkit.getLogger().info("[DashMC] Loading " + length * height * width + " blocks...");
+		Bukkit.getLogger().info("[SchematicPaster] Loading " + length * height * width + " blocks...");
 
 		for (int y = 0, index = 0; y < height; y++) {
 			for (int z = 0; z < length; z++) {
@@ -199,7 +200,7 @@ public class Schematic {
 		}
 		// deleteData();
 		loading.set(false);
-		Bukkit.getLogger().info("[DashMC] Finished loading.");
+		Bukkit.getLogger().info("[SchematicPaster] Finished loading.");
 	}
 
 	public void deleteData() {
@@ -225,7 +226,7 @@ public class Schematic {
 		SchematicChunk schemChunk = map.getSchematicChunk(cx, cz);
 		schemChunk.setBlock(x & 15, y, z & 15, id, data);
 
-		if (DashMC.hasNBT(id)) {
+		if (SchematicPaster.hasNBT(id)) {
 			NBTTagCompound compoundTag = getTag(index);
 			schemChunk.setTile(x & 15, y, z & 15, compoundTag);
 		}

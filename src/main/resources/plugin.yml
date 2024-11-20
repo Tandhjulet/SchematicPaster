@@ -1,12 +1,10 @@
-main: net.dashmc.DashMC
-name: DashMC
+main: dk.tandhjulet.SchematicPaster
+name: SchematicPaster
 author: Tandhjulet
 version: ${project.version}
-description: Core plugin for DashMC
-
-depend: [WorldEdit]
+description: Fastest schematic paster
 
 commands:
-  dash:
-    description: Administration command for dash plugin
+  paste:
+    description: Pastes a schematic
     usage: /<command>

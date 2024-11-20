@@ -1,4 +1,4 @@
-package net.dashmc.map;
+package dk.tandhjulet.map;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -12,9 +12,9 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 
-import net.dashmc.DashMC;
-import net.dashmc.packet.ChunkUpdatePacketBuilder;
-import net.dashmc.util.MathUtils;
+import dk.tandhjulet.SchematicPaster;
+import dk.tandhjulet.packet.ChunkUpdatePacketBuilder;
+import dk.tandhjulet.util.MathUtils;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
 import net.minecraft.server.v1_8_R3.Entity;
@@ -82,8 +82,8 @@ public class SchematicChunk {
 
 	// https://github.com/IntellectualSites/FastAsyncWorldedit-Legacy/blob/e3a89ad9d4a0437af48be84af0088901a3d6c822/core/src/main/java/com/boydti/fawe/example/CharFaweChunk.java#L195
 	public void setBlock(int x, int y, int z, int id, int data) {
-		final int i = DashMC.CACHE_I[y][z][x];
-		final int j = DashMC.CACHE_J[y][z][x];
+		final int i = SchematicPaster.CACHE_I[y][z][x];
+		final int j = SchematicPaster.CACHE_J[y][z][x];
 		char[] vs = this.ids[i];
 		if (vs == null) {
 			vs = this.ids[i] = new char[4096];
@@ -180,7 +180,7 @@ public class SchematicChunk {
 
 	public Chunk getChunk() {
 		if (chunk == null) {
-			WorldServer bukkitWorld = ((CraftWorld) DashMC.getConf().getMapOrigin().getWorld()).getHandle();
+			WorldServer bukkitWorld = ((CraftWorld) SchematicPaster.getConf().getMapOrigin().getWorld()).getHandle();
 			if (ChunkProvider.isInjected()) {
 				ChunkProvider chunkProvider = ((ChunkProvider) bukkitWorld.chunkProviderServer);
 				chunk = chunkProvider.getChunkAt(x, z, null, false).bukkitChunk;
@@ -245,7 +245,7 @@ public class SchematicChunk {
 					int y = MathUtils.roundInt(entity.locY);
 					if (y < 0 || y > 255)
 						continue;
-					if (array[DashMC.CACHE_J[y][z][x]] != 0) {
+					if (array[SchematicPaster.CACHE_J[y][z][x]] != 0) {
 						nmsWorld.removeEntity(entity);
 					}
 				}
@@ -287,12 +287,12 @@ public class SchematicChunk {
 				int lx = pos.getX() & 15;
 				int ly = pos.getY();
 				int lz = pos.getZ() & 15;
-				int j = DashMC.CACHE_I[ly][lz][lx];
+				int j = SchematicPaster.CACHE_I[ly][lz][lx];
 				char[] array = this.getIdArray(j);
 				if (array == null) {
 					continue;
 				}
-				int k = DashMC.CACHE_J[ly][lz][lx];
+				int k = SchematicPaster.CACHE_J[ly][lz][lx];
 				if (array[k] != 0) {
 					if (toRemove == null) {
 						toRemove = new HashMap<>();

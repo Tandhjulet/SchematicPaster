@@ -4,8 +4,8 @@
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>net.dashmc</groupId>
-	<artifactId>kitpvp</artifactId>
+	<groupId>dk.tandhjulet</groupId>
+	<artifactId>schematic</artifactId>
 	<version>1.0</version>
 
 	<properties>
@@ -104,12 +104,12 @@
 					<relocations>
 						<relocation>
 							<pattern>eu.okaeri</pattern>
-							<shadedPattern>net.dashmc.libs</shadedPattern>
+							<shadedPattern>dk.tandhjulet.libs</shadedPattern>
 						</relocation>
 
 						<relocation>
 							<pattern>it.unimi.dsi</pattern>
-							<shadedPattern>net.dashmc.libs</shadedPattern>
+							<shadedPattern>dk.tandhjulet.libs</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>

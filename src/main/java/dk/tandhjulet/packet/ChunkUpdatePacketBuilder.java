@@ -1,4 +1,4 @@
-package net.dashmc.packet;
+package dk.tandhjulet.packet;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

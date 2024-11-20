@@ -1,4 +1,4 @@
-package net.dashmc;
+package dk.tandhjulet;
 
 import java.io.File;
 
@@ -7,16 +7,16 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import dk.tandhjulet.commands.CommandPaste;
+import dk.tandhjulet.config.Config;
+import dk.tandhjulet.map.ChunkProvider;
+import dk.tandhjulet.map.MapManager;
 import eu.okaeri.configs.ConfigManager;
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
 import eu.okaeri.configs.yaml.bukkit.serdes.SerdesBukkit;
 import lombok.Getter;
-import net.dashmc.commands.CommandDash;
-import net.dashmc.config.Config;
-import net.dashmc.map.ChunkProvider;
-import net.dashmc.map.MapManager;
 
-public class DashMC extends JavaPlugin {
+public class SchematicPaster extends JavaPlugin {
 	// Precalculates and stores indexes to id array
 	public final static short[][][] CACHE_I = new short[256][16][16];
 	public final static short[][][] CACHE_J = new short[256][16][16];
@@ -30,7 +30,7 @@ public class DashMC extends JavaPlugin {
 	public final static byte[][] CACHE_Z = new byte[16][4096];
 
 	@Getter
-	private static DashMC plugin;
+	private static SchematicPaster plugin;
 
 	@Getter
 	private static Config conf;
@@ -47,7 +47,7 @@ public class DashMC extends JavaPlugin {
 		});
 
 		try {
-			Bukkit.getLogger().info("[DashMC] Injecting custom ServerChunkProvider");
+			Bukkit.getLogger().info("[SchematicPaster] Injecting custom ServerChunkProvider");
 			CraftWorld world = (CraftWorld) conf.getMapOrigin().getWorld();
 			ChunkProvider.inject(world.getHandle());
 		} catch (IllegalArgumentException | IllegalAccessException | CloneNotSupportedException e) {
@@ -56,16 +56,7 @@ public class DashMC extends JavaPlugin {
 			e.printStackTrace();
 		}
 
-		if (!conf.isAntiXrayEnabled()) {
-			Bukkit.getLogger().info("Disabling anti xray for all worlds for increased performance");
-			Bukkit.getWorlds().forEach(world -> {
-				((CraftWorld) world).getHandle().spigotConfig.antiXray = false;
-			});
-		} else {
-			Bukkit.getLogger().info("Anti xray is allowed. You will take a performance hit when sending packets.");
-		}
-
-		CommandDash.register();
+		CommandPaste.register();
 		MapManager.get();
 	}
 

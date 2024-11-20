@@ -1,4 +1,4 @@
-package net.dashmc.map;
+package dk.tandhjulet.map;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,19 +6,19 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 
-import net.dashmc.DashMC;
-import net.dashmc.config.Config.MapConfig;
+import dk.tandhjulet.SchematicPaster;
+import dk.tandhjulet.config.Config.MapConfig;
 
 public class MapManager {
 	private ArrayList<Schematic> maps = new ArrayList<>();
 
 	private static MapManager instance;
-	private static File schematicDirectory = new File(DashMC.getPlugin().getDataFolder(), "schematics");
+	private static File schematicDirectory = new File(SchematicPaster.getPlugin().getDataFolder(), "schematics");
 
 	private MapManager() {
 		instance = this;
 
-		List<MapConfig> registeredMaps = DashMC.getConf().getMaps();
+		List<MapConfig> registeredMaps = SchematicPaster.getConf().getMaps();
 
 		if (registeredMaps == null)
 			return;
@@ -45,8 +45,12 @@ public class MapManager {
 	public void pasteMap(int index) {
 		Schematic map = maps.get(index);
 		map.load();
-		Bukkit.getLogger().info("[DashMC] Pasting...");
+		Bukkit.getLogger().info("[SchematicPaster] Pasting...");
 		map.paste();
+	}
+
+	public int size() {
+		return maps.size();
 	}
 
 	public static MapManager get() {

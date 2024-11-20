@@ -1,4 +1,4 @@
-package net.dashmc.util;
+package dk.tandhjulet.util;
 
 public class MathUtils {
 	public static final long pairInt(int x, int y) {

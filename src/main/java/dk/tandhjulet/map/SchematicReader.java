@@ -1,4 +1,4 @@
-package net.dashmc.map;
+package dk.tandhjulet.map;
 
 import java.io.File;
 import java.io.FileInputStream;
