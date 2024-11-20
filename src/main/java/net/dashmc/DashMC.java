@@ -56,6 +56,15 @@ public class DashMC extends JavaPlugin {
 			e.printStackTrace();
 		}
 
+		if (!conf.isAntiXrayEnabled()) {
+			Bukkit.getLogger().info("Disabling anti xray for all worlds for increased performance");
+			Bukkit.getWorlds().forEach(world -> {
+				((CraftWorld) world).getHandle().spigotConfig.antiXray = false;
+			});
+		} else {
+			Bukkit.getLogger().info("Anti xray is allowed. You will take a performance hit when sending packets.");
+		}
+
 		CommandDash.register();
 		MapManager.get();
 	}

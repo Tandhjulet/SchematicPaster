@@ -15,6 +15,10 @@ public class Config extends OkaeriConfig {
 	private transient static org.bukkit.World defaultWorld = Bukkit.getWorlds().get(0);
 
 	@Getter
+	@Comment({ "Anti Xray should be disabled for the best performance." })
+	private boolean antiXrayEnabled = false;
+
+	@Getter
 	@Comment({ "Origin to place the map at. If the schematic origin is at",
 			"spawn, this location should be at spawn aswell." })
 	private Location mapOrigin = new Location(defaultWorld, 0, 0, 0);

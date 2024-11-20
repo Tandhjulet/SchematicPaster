@@ -6,15 +6,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 
 import net.dashmc.DashMC;
+import net.dashmc.packet.ChunkUpdatePacketBuilder;
 import net.dashmc.util.MathUtils;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
@@ -280,23 +279,37 @@ public class SchematicChunk {
 			}
 
 			// Remove old tile entities
-			Map<BlockPosition, TileEntity> tileEntities = nmsChunk.tileEntities;
-			synchronized (tileEntities) {
-				try {
-					for (Entry<BlockPosition, TileEntity> entry : tileEntities.entrySet()) {
-						TileEntity tileEntity = entry.getValue();
-
-						nmsWorld.t(entry.getKey());
-						tileEntity.y();
-						tileEntity.E();
-					}
-				} catch (Exception e) {
-					// This TileEntity has most likely already been deleted.
-					// Let's log it anyway.
-					Bukkit.getLogger()
-							.warning("[DashMC] Tried to remove non-existent TileEntity: " + e.getMessage());
+			Iterator<Map.Entry<BlockPosition, TileEntity>> iterator = nmsChunk.tileEntities.entrySet().iterator();
+			HashMap<BlockPosition, TileEntity> toRemove = null;
+			while (iterator.hasNext()) {
+				Map.Entry<BlockPosition, TileEntity> tile = iterator.next();
+				BlockPosition pos = tile.getKey();
+				int lx = pos.getX() & 15;
+				int ly = pos.getY();
+				int lz = pos.getZ() & 15;
+				int j = DashMC.CACHE_I[ly][lz][lx];
+				char[] array = this.getIdArray(j);
+				if (array == null) {
+					continue;
 				}
-				nmsChunk.tileEntities.clear();
+				int k = DashMC.CACHE_J[ly][lz][lx];
+				if (array[k] != 0) {
+					if (toRemove == null) {
+						toRemove = new HashMap<>();
+					}
+					toRemove.put(tile.getKey(), tile.getValue());
+				}
+			}
+			if (toRemove != null) {
+				for (Map.Entry<BlockPosition, TileEntity> entry : toRemove.entrySet()) {
+					BlockPosition bp = entry.getKey();
+					TileEntity tile = entry.getValue();
+					nmsChunk.tileEntities.remove(bp);
+					nmsWorld.t(bp);
+					tile.y();
+					tile.E();
+				}
+				toRemove = null;
 			}
 
 			// Set tiles/blocks with NBT
@@ -368,7 +381,7 @@ public class SchematicChunk {
 			// 0xffff = 65535 = all 16 bits are set
 			if (bitMask == 0 || bitMask == 0xFFFF) {
 				// First 8 bits
-				PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(nmsChunk, false, 0xFF00);
+				PacketPlayOutMapChunk packet = ChunkUpdatePacketBuilder.build(nmsChunk, 0xFF00);
 				sendPacketToPlayers.invoke(playerChunk, packet);
 
 				// Last 8 bits
@@ -376,7 +389,7 @@ public class SchematicChunk {
 			}
 
 			// Send packet with "normal" blocks
-			PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(nmsChunk, false, bitMask);
+			PacketPlayOutMapChunk packet = ChunkUpdatePacketBuilder.build(nmsChunk, bitMask);
 			sendPacketToPlayers.invoke(playerChunk, packet);
 
 			// Send packets with Tile Entities
