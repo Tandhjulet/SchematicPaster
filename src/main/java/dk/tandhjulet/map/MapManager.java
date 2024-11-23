@@ -2,6 +2,7 @@ package dk.tandhjulet.map;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -10,7 +11,8 @@ import dk.tandhjulet.SchematicPaster;
 import dk.tandhjulet.config.Config.MapConfig;
 
 public class MapManager {
-	private ArrayList<Schematic> maps = new ArrayList<>();
+	private HashMap<String, Schematic> maps = new HashMap<>();
+	private ArrayList<String> mapNames = new ArrayList<>();
 
 	private static MapManager instance;
 	private static File schematicDirectory = new File(SchematicPaster.getPlugin().getDataFolder(), "schematics");
@@ -27,6 +29,8 @@ public class MapManager {
 			String filePath = map.get("schemFile", String.class);
 
 			try {
+				String mapName = map.get("name", String.class);
+
 				File schemFile = new File(schematicDirectory, filePath);
 				if (!schemFile.exists()) {
 					Bukkit.getLogger().severe("File " + filePath + " doesn't exist.");
@@ -34,7 +38,8 @@ public class MapManager {
 				}
 
 				Schematic registered = new SchematicReader(schemFile).getSchematic();
-				maps.add(registered);
+				maps.put(mapName, registered);
+				mapNames.add(mapName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -43,7 +48,12 @@ public class MapManager {
 	}
 
 	public void pasteMap(int index) {
-		Schematic map = maps.get(index);
+		String mapName = mapNames.get(index);
+		pasteMap(mapName);
+	}
+
+	public void pasteMap(String name) {
+		Schematic map = maps.get(name);
 		map.load();
 		Bukkit.getLogger().info("[SchematicPaster] Pasting...");
 		map.paste();

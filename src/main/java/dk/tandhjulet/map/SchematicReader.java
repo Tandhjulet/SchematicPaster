@@ -12,6 +12,7 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NBTTagList;
 
 public class SchematicReader {
+
 	private Schematic schematic;
 
 	public NBTTagCompound nbtTagCompound;
