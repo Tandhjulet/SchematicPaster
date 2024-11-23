@@ -1,8 +1,11 @@
 package dk.tandhjulet.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 
 import dk.tandhjulet.SchematicPaster;
 import dk.tandhjulet.map.MapManager;
@@ -10,11 +13,13 @@ import dk.tandhjulet.map.MapManager;
 public class CommandPaste implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (!sender.isOp()) {
+		if (sender instanceof ConsoleCommandSender) {
+			Bukkit.getLogger().info("Unsupported by console.");
+			return false;
+		} else if (!sender.isOp()) {
 			sender.sendMessage("Not permitted.");
 			return false;
-		}
-		if (args.length == 0) {
+		} else if (args.length == 0) {
 			sender.sendMessage("/paste <map index>");
 			return false;
 		}
@@ -25,7 +30,7 @@ public class CommandPaste implements CommandExecutor {
 			return false;
 		}
 
-		MapManager.get().pasteMap(mapNum - 1);
+		MapManager.get().pasteMap(mapNum - 1, ((Player) sender).getLocation());
 
 		return true;
 	}

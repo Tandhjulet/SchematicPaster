@@ -15,6 +15,7 @@ import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import dk.tandhjulet.SchematicPaster;
 import dk.tandhjulet.packet.ChunkUpdatePacketBuilder;
 import dk.tandhjulet.util.MathUtils;
+import lombok.Setter;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
 import net.minecraft.server.v1_8_R3.Entity;
@@ -37,6 +38,9 @@ public class SchematicChunk {
 	static private Field fieldNonEmptyBlockCount;
 	static private final ChunkSection emptySection = new ChunkSection(0, true);
 	static private byte[] fullSkyLight = new byte[2048];
+
+	@Setter
+	private World world;
 
 	private Chunk chunk;
 	public final char[][] ids;
@@ -180,7 +184,7 @@ public class SchematicChunk {
 
 	public Chunk getChunk() {
 		if (chunk == null) {
-			WorldServer bukkitWorld = ((CraftWorld) SchematicPaster.getConf().getMapOrigin().getWorld()).getHandle();
+			WorldServer bukkitWorld = ((CraftWorld) world).getHandle();
 			if (ChunkProvider.isInjected()) {
 				ChunkProvider chunkProvider = ((ChunkProvider) bukkitWorld.chunkProviderServer);
 				chunk = chunkProvider.getChunkAt(x, z, null, false).bukkitChunk;

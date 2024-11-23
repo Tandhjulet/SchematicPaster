@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 
 import dk.tandhjulet.SchematicPaster;
 
@@ -26,9 +27,9 @@ public class MapManager {
 		}
 	}
 
-	public void pasteMap(int index) {
+	public void pasteMap(int index, Location loc) {
 		Schematic map = maps.get(index);
-		map.load();
+		map.load(loc);
 		Bukkit.getLogger().info("[SchematicPaster] Pasting...");
 		map.paste();
 	}

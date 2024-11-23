@@ -3,11 +3,19 @@ package dk.tandhjulet.map;
 import java.util.Collection;
 import java.util.Map;
 
+import org.bukkit.World;
+
 import dk.tandhjulet.object.RunnableWithVal;
 import dk.tandhjulet.util.MathUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 public class ChunkMap {
+	private World world;
+
+	public ChunkMap(World world) {
+		this.world = world;
+	}
+
 	private volatile SchematicChunk lastWrappedChunk;
 	public final Long2ObjectOpenHashMap<SchematicChunk> chunks = new Long2ObjectOpenHashMap<SchematicChunk>() {
 		@Override
@@ -46,6 +54,8 @@ public class ChunkMap {
 
 		if (chunk == null) {
 			chunk = new SchematicChunk(cx, cz);
+			chunk.setWorld(this.world);
+
 			SchematicChunk previous = this.chunks.put(pair, chunk);
 			if (previous != null) {
 				chunks.put(pair, previous);

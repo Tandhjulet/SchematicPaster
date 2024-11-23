@@ -48,8 +48,11 @@ public class SchematicPaster extends JavaPlugin {
 
 		try {
 			Bukkit.getLogger().info("[SchematicPaster] Injecting custom ServerChunkProvider");
-			CraftWorld world = (CraftWorld) conf.getMapOrigin().getWorld();
+
+			// TODO: Make ChunkProvider for all worlds
+			CraftWorld world = (CraftWorld) Bukkit.getWorlds().get(0);
 			ChunkProvider.inject(world.getHandle());
+
 		} catch (IllegalArgumentException | IllegalAccessException | CloneNotSupportedException e) {
 			Bukkit.getLogger().severe("Failed to inject ChunkProvider.");
 			ChunkProvider.setInjected(false);

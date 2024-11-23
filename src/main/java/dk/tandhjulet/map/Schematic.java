@@ -20,7 +20,7 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 public class Schematic {
 	private long time = 0;
 
-	private ChunkMap map = new ChunkMap();
+	private ChunkMap map;
 
 	private AtomicBoolean loading = new AtomicBoolean(true);
 
@@ -179,8 +179,15 @@ public class Schematic {
 		return id;
 	}
 
-	public void load() {
-		Location to = SchematicPaster.getConf().getMapOrigin();
+	/**
+	 * Load schematic to be pasted
+	 * 
+	 * @param to Location to load the schematic at. It will get pasted here once
+	 *           #paste() is called.
+	 */
+	public void load(Location to) {
+		map = new ChunkMap(to.getWorld());
+
 		final int relx = to.getBlockX() + minPoint.getBlockX() - getMx();
 		final int rely = to.getBlockY() + minPoint.getBlockY() - getMy();
 		final int relz = to.getBlockZ() + minPoint.getBlockZ() - getMz();
