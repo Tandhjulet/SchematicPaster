@@ -1,5 +1,7 @@
 package dk.tandhjulet.commands;
 
+import java.io.IOException;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,8 +31,12 @@ public class CommandPaste implements CommandExecutor {
 			sender.sendMessage("Invalid index");
 			return false;
 		}
-
-		MapManager.get().pasteMap(mapNum - 1, ((Player) sender).getLocation());
+		try {
+			MapManager.get().pasteMap(mapNum - 1, ((Player) sender).getLocation());
+		} catch (IOException e) {
+			e.printStackTrace();
+			sender.sendMessage("An error occured. View it in the logs.");
+		}
 
 		return true;
 	}
