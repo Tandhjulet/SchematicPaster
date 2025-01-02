@@ -2,7 +2,7 @@ package dk.tandhjulet.map;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -10,8 +10,7 @@ import org.bukkit.Location;
 import dk.tandhjulet.SchematicPaster;
 
 public class MapManager {
-	private ArrayList<Schematic> maps = new ArrayList<>();
-	private ArrayList<File> schematics = new ArrayList<>();
+	private HashMap<String, File> schematics = new HashMap<>();
 
 	private static MapManager instance;
 	private static File schematicDirectory = new File(SchematicPaster.getPlugin().getDataFolder(), "schematics");
@@ -20,24 +19,28 @@ public class MapManager {
 		instance = this;
 
 		for (File schematicFile : schematicDirectory.listFiles()) {
-			schematics.add(schematicFile);
+			schematics.put(schematicFile.getName(), schematicFile);
 		}
 	}
 
-	public Schematic getSchematic(int index) throws IOException {
-		File schematicFile = schematics.get(index);
+	public Schematic readSchematic(String fileName) throws IOException {
+		File schematicFile = schematics.get(fileName);
 		return new SchematicReader(schematicFile).getSchematic();
 	}
 
-	public void pasteMap(int index, Location loc) throws IOException {
-		Schematic map = getSchematic(index);
+	public void pasteMap(String fileName, Location loc) throws IOException {
+		Schematic map = readSchematic(fileName);
 		map.load(loc);
 		Bukkit.getLogger().info("[SchematicPaster] Pasting...");
 		map.paste();
 	}
 
+	public boolean isMapAvailable(String fileName) {
+		return schematics.containsKey(fileName);
+	}
+
 	public int size() {
-		return maps.size();
+		return schematics.size();
 	}
 
 	public static MapManager get() {

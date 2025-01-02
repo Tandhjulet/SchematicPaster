@@ -17,22 +17,23 @@ public class CommandPaste implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (sender instanceof ConsoleCommandSender) {
 			Bukkit.getLogger().info("Unsupported by console.");
-			return false;
+			return true;
 		} else if (!sender.isOp()) {
 			sender.sendMessage("Not permitted.");
-			return false;
+			return true;
 		} else if (args.length == 0) {
 			sender.sendMessage("/paste <map index>");
-			return false;
+			return true;
 		}
 
-		int mapNum = new Integer(args[0]);
-		if (mapNum < 1 || mapNum > MapManager.get().size()) {
-			sender.sendMessage("Invalid index");
-			return false;
+		MapManager manager = MapManager.get();
+		if (!manager.isMapAvailable(args[0])) {
+			sender.sendMessage("Could not find file " + args[0] + ".");
+			return true;
 		}
+
 		try {
-			MapManager.get().pasteMap(mapNum - 1, ((Player) sender).getLocation());
+			manager.pasteMap(args[0], ((Player) sender).getLocation());
 		} catch (IOException e) {
 			e.printStackTrace();
 			sender.sendMessage("An error occured. View it in the logs.");

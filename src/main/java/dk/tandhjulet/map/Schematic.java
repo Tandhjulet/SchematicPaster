@@ -18,8 +18,6 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 
 @Data
 public class Schematic {
-	private long time = 0;
-
 	private ChunkMap map;
 
 	private AtomicBoolean loading = new AtomicBoolean(true);
@@ -74,12 +72,13 @@ public class Schematic {
 			return;
 		}
 
-		time = System.currentTimeMillis();
+		long pretick = System.currentTimeMillis();
 
 		BukkitRunnable runnable = new BukkitRunnable() {
 			Iterator<SchematicChunk> chunkIterator = map.getSchematicChunks().iterator();
 			int maxChunks = (SchematicPaster.getConf().getMaxChunksPerSecond() == -1) ? map.getSchematicChunks().size()
 					: SchematicPaster.getConf().getMaxChunksPerSecond();
+			long posttick = System.currentTimeMillis();
 
 			@Override
 			public void run() {
@@ -87,9 +86,14 @@ public class Schematic {
 					if (!chunkIterator.hasNext()) {
 						cancel();
 						map.chunks.clear();
-						Bukkit.getLogger()
-								.info("[SchematicPaster] Done pasting. Took " + (System.currentTimeMillis() - time)
-										+ "ms!");
+
+						long now = System.currentTimeMillis();
+						long pretickDelta = now - pretick;
+						long nowDelta = now - posttick;
+
+						Bukkit.getLogger().info(String.format(
+								"[SchematicPaster] Done pasting. Took %,d ms (%,d ms pretick)", nowDelta,
+								pretickDelta));
 						return;
 					}
 					SchematicChunk chunk = chunkIterator.next();
