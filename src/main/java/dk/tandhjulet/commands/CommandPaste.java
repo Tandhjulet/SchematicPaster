@@ -22,7 +22,13 @@ public class CommandPaste implements CommandExecutor {
 			sender.sendMessage("Not permitted.");
 			return true;
 		} else if (args.length == 0) {
-			sender.sendMessage("/paste <map index>");
+			sender.sendMessage("/paste <file name>");
+			return true;
+		}
+
+		if (args[0].equals("reload")) {
+			SchematicPaster.getConf().reload();
+			sender.sendMessage("Reloaded configuration.");
 			return true;
 		}
 
