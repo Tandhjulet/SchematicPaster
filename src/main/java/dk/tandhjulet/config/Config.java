@@ -1,11 +1,30 @@
 package dk.tandhjulet.config;
 
-import eu.okaeri.configs.OkaeriConfig;
-import eu.okaeri.configs.annotation.Comment;
+import org.bukkit.configuration.file.FileConfiguration;
+
+import dk.tandhjulet.SchematicPaster;
 import lombok.Getter;
 
-public class Config extends OkaeriConfig {
+public class Config {
+
+	final SchematicPaster instance;
+	final FileConfiguration fileConf;
+
 	@Getter
-	@Comment("Max chunks to place pr. second. Set to -1 to disable.")
-	private Integer maxChunksPerSecond = -1;
+	int maxChunksPerSecond = -1;
+
+	public Config(SchematicPaster plugin) {
+		this.instance = plugin;
+		this.fileConf = instance.getConfig();
+
+		fileConf.addDefault("maxChunksPerSecond", -1);
+		fileConf.options().copyDefaults(true);
+		instance.saveConfig();
+
+		reload();
+	}
+
+	public void reload() {
+		maxChunksPerSecond = fileConf.getInt("maxChunksPerSecond");
+	}
 }

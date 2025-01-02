@@ -15,25 +15,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>okaeri-repo</id>
-			<url>https://storehouse.okaeri.eu/repository/maven-public/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
-		<dependency>
-			<groupId>eu.okaeri</groupId>
-			<artifactId>okaeri-configs-serdes-bukkit</artifactId>
-			<version>5.0.5</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.okaeri</groupId>
-			<artifactId>okaeri-configs-yaml-bukkit</artifactId>
-			<version>5.0.5</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -104,11 +86,6 @@
 						</filter>
 					</filters>
 					<relocations>
-						<relocation>
-							<pattern>eu.okaeri</pattern>
-							<shadedPattern>dk.tandhjulet.libs</shadedPattern>
-						</relocation>
-
 						<relocation>
 							<pattern>it.unimi.dsi</pattern>
 							<shadedPattern>dk.tandhjulet.libs</shadedPattern>

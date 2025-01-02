@@ -1,9 +1,6 @@
 package dk.tandhjulet;
 
-import java.io.File;
-
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -11,9 +8,6 @@ import dk.tandhjulet.commands.CommandPaste;
 import dk.tandhjulet.config.Config;
 import dk.tandhjulet.map.ChunkProvider;
 import dk.tandhjulet.map.MapManager;
-import eu.okaeri.configs.ConfigManager;
-import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
-import eu.okaeri.configs.yaml.bukkit.serdes.SerdesBukkit;
 import lombok.Getter;
 
 public class SchematicPaster extends JavaPlugin {
@@ -38,13 +32,7 @@ public class SchematicPaster extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		plugin = this;
-
-		conf = ConfigManager.create(Config.class, (conf) -> {
-			conf.withConfigurer(new YamlBukkitConfigurer(), new SerdesBukkit());
-			conf.withBindFile(new File(this.getDataFolder(), "config.yml"));
-			conf.saveDefaults();
-			conf.load(true);
-		});
+		conf = new Config(this);
 
 		try {
 			Bukkit.getLogger().info("[SchematicPaster] Injecting custom ServerChunkProvider");
@@ -61,10 +49,6 @@ public class SchematicPaster extends JavaPlugin {
 
 		CommandPaste.register();
 		MapManager.get();
-	}
-
-	public FileConfiguration getConfig() {
-		return null;
 	}
 
 	public static boolean hasNBT(int id) {
