@@ -1,5 +1,5 @@
 ## Fast(est) Schematic Pasting
-This 1.8-compatible lightweight plugin provides the fastest schematic pasting available. In testing, 6.5 million blocks were reliably placed in ~0.90s. This is approx. 400-500% faster than FAWE (for 1.8), but this plugin is, compared to the contrary, also thread safe! This means no more weird bugs, mirroring, etc.
+This 1.8-compatible lightweight plugin provides the fastest schematic pasting available. In testing, 6.5 million blocks were reliably placed in **<100ms** (30ms-100ms). This is approx. **5350% times faster than FAWE** (400% for operations inside ungenerated chunks), but this plugin is, compared to the contrary, also thread safe! This means no more weird bugs, mirroring, etc.
 
 However, all this speed also comes with a few drawbacks:
 
