@@ -224,15 +224,17 @@ public class SchematicChunk {
 					continue;
 
 				if (count >= 4096) {
-					Iterator<Entity> entIter = ents.iterator();
-					while (entIter.hasNext()) {
-						Entity entity = entIter.next();
-						if (entity instanceof EntityPlayer)
-							continue;
-						entIter.remove();
-						nmsWorld.removeEntity(entity);
+					synchronized (SchematicChunk.class) {
+						Iterator<Entity> entIter = ents.iterator();
+						while (entIter.hasNext()) {
+							Entity entity = entIter.next();
+							if (entity instanceof EntityPlayer)
+								continue;
+							entIter.remove();
+							nmsWorld.removeEntity(entity);
+						}
+						continue;
 					}
-					continue;
 				}
 
 				char[] array = getIdArray(i);
@@ -240,19 +242,22 @@ public class SchematicChunk {
 					continue;
 
 				Entity[] entsArr = ents.toArray(new Entity[ents.size()]);
-				for (Entity entity : entsArr) {
-					if (entity instanceof EntityPlayer)
-						continue;
+				synchronized (SchematicChunk.class) {
+					for (Entity entity : entsArr) {
+						if (entity instanceof EntityPlayer)
+							continue;
 
-					int x = (MathUtils.roundInt(entity.locX) & 15);
-					int z = (MathUtils.roundInt(entity.locZ) & 15);
-					int y = MathUtils.roundInt(entity.locY);
-					if (y < 0 || y > 255)
-						continue;
-					if (array[SchematicPaster.CACHE_J[y][z][x]] != 0) {
+						// int x = (MathUtils.roundInt(entity.locX) & 15);
+						// int z = (MathUtils.roundInt(entity.locZ) & 15);
+						int y = MathUtils.roundInt(entity.locY);
+						if (y < 0 || y > 255)
+							continue;
+						// if (array[SchematicPaster.CACHE_J[y][z][x]] != 0)
 						nmsWorld.removeEntity(entity);
+
 					}
 				}
+
 			}
 
 			// Set blocks
@@ -283,41 +288,19 @@ public class SchematicChunk {
 			}
 
 			// Remove old tile entities
-			Iterator<Map.Entry<BlockPosition, TileEntity>> iterator = nmsChunk.tileEntities.entrySet().iterator();
-			HashMap<BlockPosition, TileEntity> toRemove = null;
-			while (iterator.hasNext()) {
-				Map.Entry<BlockPosition, TileEntity> tile = iterator.next();
-				BlockPosition pos = tile.getKey();
-				int lx = pos.getX() & 15;
-				int ly = pos.getY();
-				int lz = pos.getZ() & 15;
-				int j = SchematicPaster.CACHE_I[ly][lz][lx];
-				char[] array = this.getIdArray(j);
-				if (array == null) {
-					continue;
-				}
-				int k = SchematicPaster.CACHE_J[ly][lz][lx];
-				if (array[k] != 0) {
-					if (toRemove == null) {
-						toRemove = new HashMap<>();
-					}
-					toRemove.put(tile.getKey(), tile.getValue());
-				}
-			}
-			if (toRemove != null) {
-				for (Map.Entry<BlockPosition, TileEntity> entry : toRemove.entrySet()) {
-					BlockPosition bp = entry.getKey();
-					TileEntity tile = entry.getValue();
-					nmsChunk.tileEntities.remove(bp);
-					nmsWorld.t(bp);
-					tile.y();
-					tile.E();
-				}
-				toRemove = null;
+			TileEntity[] tiles = nmsChunk.tileEntities.values().toArray(new TileEntity[nmsChunk.tileEntities.size()]);
+			for (int i = 0; i < tiles.length; i++) {
+				TileEntity tile = tiles[i];
+				BlockPosition bp = tile.getPosition();
+
+				nmsChunk.tileEntities.remove(bp);
+				nmsWorld.t(bp);
+				tile.y();
+				tile.E();
 			}
 
 			// Set tiles/blocks with NBT
-			for (Map.Entry<Short, NBTTagCompound> entry : tiles.entrySet()) {
+			for (Map.Entry<Short, NBTTagCompound> entry : this.tiles.entrySet()) {
 				short coordPair = entry.getKey();
 				int x = (coordPair >> 12 & 0xF) + bx;
 				int y = coordPair & 0xFF;
