@@ -15,6 +15,7 @@ import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import dk.tandhjulet.SchematicPaster;
 import dk.tandhjulet.packet.ChunkUpdatePacketBuilder;
 import dk.tandhjulet.util.MathUtils;
+import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
@@ -48,6 +49,7 @@ public class SchematicChunk {
 	public final short[] air;
 	public final byte[] heightMap;
 
+	@Getter
 	private int x, z;
 
 	private HashMap<Short, NBTTagCompound> tiles = new HashMap<>();

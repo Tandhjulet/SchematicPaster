@@ -73,16 +73,33 @@ public class Schematic {
 		}
 
 		long pretick = System.currentTimeMillis();
+		boolean debug = SchematicPaster.getConf().isDebug();
 
 		BukkitRunnable runnable = new BukkitRunnable() {
 			Iterator<SchematicChunk> chunkIterator = map.getSchematicChunks().iterator();
 			int maxChunks = (SchematicPaster.getConf().getMaxChunksPerSecond() == -1) ? map.getSchematicChunks().size()
 					: SchematicPaster.getConf().getMaxChunksPerSecond();
-			long posttick = System.currentTimeMillis();
+			long posttick = Long.MIN_VALUE;
 
 			@Override
 			public void run() {
+				if (posttick == Long.MIN_VALUE)
+					posttick = System.currentTimeMillis();
+
 				for (int i = 0; i < maxChunks; i++) {
+					long pasteTime = System.currentTimeMillis();
+
+					SchematicChunk chunk = chunkIterator.next();
+					chunk.update();
+					chunk.sendChunk();
+
+					if (debug) {
+						long res = System.currentTimeMillis() - pasteTime;
+						Bukkit.getLogger()
+								.info("Pasted chunk at " + chunk.getX() + " z: " + chunk.getZ() + " (Took " + res
+										+ "ms)");
+					}
+
 					if (!chunkIterator.hasNext()) {
 						cancel();
 						map.chunks.clear();
@@ -96,9 +113,6 @@ public class Schematic {
 								pretickDelta));
 						return;
 					}
-					SchematicChunk chunk = chunkIterator.next();
-					chunk.update();
-					chunk.sendChunk();
 				}
 			}
 		};

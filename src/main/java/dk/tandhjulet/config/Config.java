@@ -7,17 +7,20 @@ import lombok.Getter;
 
 public class Config {
 
-	final SchematicPaster instance;
-	final FileConfiguration fileConf;
+	private final SchematicPaster instance;
+	private FileConfiguration fileConf;
 
 	@Getter
-	int maxChunksPerSecond = -1;
+	private int maxChunksPerSecond = -1;
+	@Getter
+	private boolean debug = false;
 
 	public Config(SchematicPaster plugin) {
 		this.instance = plugin;
 		this.fileConf = instance.getConfig();
 
 		fileConf.addDefault("maxChunksPerSecond", -1);
+		fileConf.addDefault("debug", false);
 		fileConf.options().copyDefaults(true);
 		instance.saveConfig();
 
@@ -25,6 +28,10 @@ public class Config {
 	}
 
 	public void reload() {
+		instance.reloadConfig();
+		this.fileConf = instance.getConfig();
+
 		maxChunksPerSecond = fileConf.getInt("maxChunksPerSecond");
+		debug = fileConf.getBoolean("debug");
 	}
 }
