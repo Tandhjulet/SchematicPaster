@@ -13,7 +13,7 @@ public class MapManager {
 	private HashMap<String, File> schematics = new HashMap<>();
 
 	private static MapManager instance;
-	private static File schematicDirectory = new File(SchematicPaster.getPlugin().getDataFolder(), "schematics");
+	public static final File schematicDirectory = new File(SchematicPaster.getPlugin().getDataFolder(), "schematics");
 
 	private MapManager() {
 		instance = this;
