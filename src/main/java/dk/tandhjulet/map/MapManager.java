@@ -30,7 +30,7 @@ public class MapManager {
 
 	public void pasteMap(String fileName, Location loc) throws IOException {
 		Schematic map = readSchematic(fileName);
-		map.load(loc);
+		map.load(loc, true);
 		Bukkit.getLogger().info("[SchematicPaster] Pasting...");
 		map.paste();
 	}

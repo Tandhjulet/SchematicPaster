@@ -17,10 +17,13 @@ import dk.tandhjulet.packet.ChunkUpdatePacketBuilder;
 import dk.tandhjulet.util.MathUtils;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.server.v1_8_R3.Block;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
+import net.minecraft.server.v1_8_R3.ChunkSnapshot;
 import net.minecraft.server.v1_8_R3.Entity;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.IBlockData;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NibbleArray;
 import net.minecraft.server.v1_8_R3.Packet;
@@ -49,19 +52,60 @@ public class SchematicChunk {
 	public final short[] air;
 	public final byte[] heightMap;
 
+	public boolean scaffold;
+
 	@Getter
 	private int x, z;
 
 	private HashMap<Short, NBTTagCompound> tiles = new HashMap<>();
 
 	public SchematicChunk(int x, int z) {
+		this(x, z, false);
+	}
+
+	/**
+	 * 
+	 * @param x        x-coord of chunk
+	 * @param z        z-coord of chunk
+	 * @param scaffold true if schem chunk should be filled with current chunks data
+	 */
+	public SchematicChunk(int x, int z, boolean scaffold) {
 		this.x = x;
 		this.z = z;
+
+		this.scaffold = scaffold;
 
 		this.ids = new char[HEIGHT >> 4][];
 		this.count = new short[HEIGHT >> 4];
 		this.air = new short[HEIGHT >> 4];
 		this.heightMap = new byte[256];
+	}
+
+	/**
+	 * fill chunk with scaffold data
+	 * 
+	 * @param c chunk section index
+	 */
+	protected void fill(int c) {
+		if (!scaffold)
+			return;
+
+		int minY = c << 4;
+
+		ChunkSnapshot snapshot = (ChunkSnapshot) getChunk().getChunkSnapshot();
+		for (int x = 0; x < 16; x++) {
+			for (int y = minY; y < minY + 16; y++) {
+				for (int z = 0; z < 16; z++) {
+					int h = x << 12 | y << 8 | z;
+					IBlockData blockData = snapshot.a(h);
+
+					int id = Block.getId(blockData.getBlock());
+					int data = blockData.getBlock().toLegacyData(blockData);
+					setBlock(x, y, z, id, data);
+				}
+			}
+		}
+
 	}
 
 	public void setCount(final int i, final short value) {
@@ -94,6 +138,7 @@ public class SchematicChunk {
 		if (vs == null) {
 			vs = this.ids[i] = new char[4096];
 			this.count[i]++;
+			fill(i >> 4);
 		} else {
 			switch (vs[j]) {
 				case 0:

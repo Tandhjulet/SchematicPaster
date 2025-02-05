@@ -200,10 +200,12 @@ public class Schematic {
 	/**
 	 * Load schematic to be pasted
 	 * 
-	 * @param to Location to load the schematic at. It will get pasted here once
-	 *           #paste() is called.
+	 * @param to       Location to load the schematic at. It will get pasted here
+	 *                 once #paste() is called.
+	 * @param pasteAir If true it overrides current, affected chunk sections with
+	 *                 air. Done lazily.
 	 */
-	public void load(Location to) {
+	public void load(Location to, boolean pasteAir) {
 		map = new ChunkMap(to.getWorld());
 
 		final int relx = to.getBlockX() + minPoint.getBlockX() - getMx();
@@ -219,7 +221,7 @@ public class Schematic {
 					int zz = z + relz;
 					int yy = y + rely;
 
-					setChunkBlock(xx, yy, zz, index);
+					setChunkBlock(xx, yy, zz, index, pasteAir);
 				}
 			}
 		}
@@ -241,14 +243,14 @@ public class Schematic {
 		return nbtMapIndex.get(index);
 	}
 
-	private void setChunkBlock(int x, int y, int z, int index) {
+	private void setChunkBlock(int x, int y, int z, int index, boolean pasteAir) {
 		int id = getId(index);
 		int data = getData(index);
 
 		int cx = x >> 4;
 		int cz = z >> 4;
 
-		SchematicChunk schemChunk = map.getSchematicChunk(cx, cz);
+		SchematicChunk schemChunk = map.getSchematicChunk(cx, cz, pasteAir);
 		schemChunk.setBlock(x & 15, y, z & 15, id, data);
 
 		if (SchematicPaster.hasNBT(id)) {
@@ -260,6 +262,10 @@ public class Schematic {
 
 	public void setBlock(int x, int y, int z, int id, int data) {
 		setBlock(getIndex(x, y, z), id, data);
+	}
+
+	public void setBlock(Location loc, int id, int data) {
+		setBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), id, data);
 	}
 
 	public void setBlock(int index, int id, int data) {

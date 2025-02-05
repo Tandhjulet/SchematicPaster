@@ -45,7 +45,7 @@ public class ChunkMap {
 		}
 	}
 
-	public SchematicChunk getSchematicChunk(int cx, int cz) {
+	public SchematicChunk getSchematicChunk(int cx, int cz, boolean pasteAir) {
 		if (cx == Integer.MIN_VALUE && cz == Integer.MIN_VALUE) {
 			return lastWrappedChunk;
 		}
@@ -53,7 +53,7 @@ public class ChunkMap {
 		SchematicChunk chunk = this.chunks.get(pair);
 
 		if (chunk == null) {
-			chunk = new SchematicChunk(cx, cz);
+			chunk = new SchematicChunk(cx, cz, pasteAir);
 			chunk.setWorld(this.world);
 
 			SchematicChunk previous = this.chunks.put(pair, chunk);
