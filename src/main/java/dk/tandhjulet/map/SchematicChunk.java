@@ -10,6 +10,7 @@ import java.util.Map;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
+import org.bukkit.craftbukkit.v1_8_R3.CraftChunkSnapshot;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 
 import dk.tandhjulet.SchematicPaster;
@@ -92,15 +93,15 @@ public class SchematicChunk {
 
 		int minY = c << 4;
 
-		ChunkSnapshot snapshot = (ChunkSnapshot) getChunk().getChunkSnapshot();
+		CraftChunkSnapshot snapshot = (CraftChunkSnapshot) ((CraftChunk) getChunk()).getChunkSnapshot();
+		if (snapshot.isSectionEmpty(c))
+			return;
+
 		for (int x = 0; x < 16; x++) {
 			for (int y = minY; y < minY + 16; y++) {
 				for (int z = 0; z < 16; z++) {
-					int h = x << 12 | y << 8 | z;
-					IBlockData blockData = snapshot.a(h);
-
-					int id = Block.getId(blockData.getBlock());
-					int data = blockData.getBlock().toLegacyData(blockData);
+					int id = snapshot.getBlockTypeId(x, y, z);
+					int data = snapshot.getBlockData(x, y, z);
 					setBlock(x, y, z, id, data);
 				}
 			}
