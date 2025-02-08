@@ -26,7 +26,6 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NibbleArray;
 import net.minecraft.server.v1_8_R3.Packet;
 import net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk;
-import net.minecraft.server.v1_8_R3.PacketPlayOutTileEntityData;
 import net.minecraft.server.v1_8_R3.PlayerChunkMap;
 import net.minecraft.server.v1_8_R3.TileEntity;
 import net.minecraft.server.v1_8_R3.WorldServer;
@@ -431,11 +430,10 @@ public class SchematicChunk {
 			// Send packets with Tile Entities
 			nmsChunk.getTileEntities().entrySet().forEach((entry) -> {
 				TileEntity tileEntity = entry.getValue();
-				PacketPlayOutTileEntityData tileUpdatePacket = (PacketPlayOutTileEntityData) tileEntity
-						.getUpdatePacket();
+				Object updatePacket = tileEntity.getUpdatePacket();
 
 				try {
-					sendPacketToPlayers.invoke(playerChunk, tileUpdatePacket);
+					sendPacketToPlayers.invoke(playerChunk, updatePacket);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
