@@ -18,13 +18,10 @@ import dk.tandhjulet.packet.ChunkUpdatePacketBuilder;
 import dk.tandhjulet.util.MathUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.server.v1_8_R3.Block;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChunkSection;
-import net.minecraft.server.v1_8_R3.ChunkSnapshot;
 import net.minecraft.server.v1_8_R3.Entity;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
-import net.minecraft.server.v1_8_R3.IBlockData;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NibbleArray;
 import net.minecraft.server.v1_8_R3.Packet;
@@ -54,6 +51,8 @@ public class SchematicChunk {
 	public final byte[] heightMap;
 
 	public boolean scaffold;
+
+	private @Getter int bitMask = 0;
 
 	@Getter
 	private int x, z;
@@ -139,6 +138,9 @@ public class SchematicChunk {
 		if (vs == null) {
 			vs = this.ids[i] = new char[4096];
 			this.count[i]++;
+
+			bitMask += 1 << i;
+
 			fill(i >> 4);
 		} else {
 			switch (vs[j]) {
@@ -380,6 +382,8 @@ public class SchematicChunk {
 		if (nmsChunk == null)
 			return;
 
+		int bitMask = this.bitMask;
+
 		try {
 			WorldServer worldServer = (WorldServer) nmsChunk.getWorld();
 			PlayerChunkMap chunkMap = worldServer.getPlayerChunkMap();
@@ -401,12 +405,9 @@ public class SchematicChunk {
 			// Make sure there are no empty sections, and make every section
 			// fully lit. Every empty section should be reflected in the bit mask.
 
-			char bitMask = 0xffff;
 			for (int i = 0; i < sections.length; ++i) {
 				if (sections[i] == null) {
 					sections[i] = emptySection;
-					// Make bit mask reflect that this section is empty
-					bitMask ^= (1 << i);
 					empty = true;
 				} else {
 					sections[i].a(new NibbleArray(fullSkyLight));
