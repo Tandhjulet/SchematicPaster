@@ -67,6 +67,10 @@ public class Schematic {
 	}
 
 	public void paste() {
+		paste(null);
+	}
+
+	public void paste(Runnable callback) {
 		if (loading.get()) {
 			Bukkit.getLogger().warning("[SchematicPaster] Did not finish loading before paste was attempted.");
 			return;
@@ -111,6 +115,10 @@ public class Schematic {
 						Bukkit.getLogger().info(String.format(
 								"[SchematicPaster] Done pasting. Took %,d ms (%,d ms pretick)", nowDelta,
 								pretickDelta));
+
+						if (callback != null)
+							callback.run();
+
 						return;
 					}
 				}
